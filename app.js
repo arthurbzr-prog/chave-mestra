@@ -509,6 +509,7 @@ const bdg=(t,c)=>`<span class="badge ${c}">${esc(t)}</span>`;
 const M$=k=>r=>`<span class="num">${fmt(num(r[k]))}</span>`;
 function prazoBadge(d){if(d==null)return '';if(d<0)return bdg('atrasado há '+(-d)+' d','bad');if(d===0)return bdg('hoje','bad');if(d<=num(C.config.alertaDias||30))return bdg('em '+d+' d','warn');return ''}
 const PRIO={Urgente:0,Alta:1,'Média':2,Baixa:3};
+const maskDoc=v=>{const d=String(v||'').replace(/\D/g,'').slice(0,14);if(!d)return '';if(d.length<=11)return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'.$1-$2');return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/,(m,a,b,c,e,f)=>a+'.'+b+'.'+c+'/'+e+(f?'-'+f:''))};
 const catsOf=r=>Array.isArray(r.categorias)&&r.categorias.length?r.categorias:(r.categoria?[r.categoria]:[]);
 const compOf=r=>(r.data||'').slice(0,7);
 const INTV={2:'bimestral',3:'trimestral',4:'quadrimestral',6:'semestral',12:'anual'};
@@ -527,7 +528,7 @@ function expandDesp(d,ate){
 }
 const despRows=()=>{const ate=addComp(CUR,24);return rows('despesas').flatMap(d=>expandDesp(d,ate)).concat(MODS.despesas.extra())};
 const doDono=d=>d.pagoPor!=='Inquilino';
-const thumb=id=>id?`<img class="thumb" src="${blob(id)}" alt="" loading="lazy">`:`<span class="thumb ph">${ICON.home}</span>`;
+const thumb=id=>id?`<img class="thumb" src="${blob(id)}" alt="" loading="lazy" data-zoom>`:`<span class="thumb ph">${ICON.home}</span>`;
 
 const ICON={
   edit:'<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
@@ -573,19 +574,22 @@ const pessoaCard=(t,p,need)=>{if(!p)return `<div class="pcard"><span class="lbl"
   return `<div class="pcard"><span class="lbl">${t}</span><b>${esc(p.nome)}</b><div class="meta">${esc([p.nacionalidade,p.estadoCivil,p.profissao].filter(Boolean).join(' · ')||'—')}</div>
   <div class="meta">CPF/CNPJ ${esc(p.doc||'—')}${p.rg?' · RG '+esc(p.rg):''}</div><div class="meta">${esc(endereco(p)||'Endereço não cadastrado')}</div>
   ${falta.length?`<div class="meta warnt">Falta: ${esc(falta.join(', '))}</div>`:''}</div>`};
-const imovelCard=(i,t)=>i?`<div class="pcard im">${i.foto?`<img src="${blob(i.foto)}" alt="">`:''}<div><span class="lbl">${t||'Imóvel'}</span><b>${esc([i.tipo,i.codigo].filter(Boolean).join(' · '))}</b><div class="meta">${esc(endereco(i)||'Endereço não cadastrado')}</div><div class="meta">${esc(i.descricao||'Sem descrição')}</div></div></div>`:`<div class="pcard"><span class="lbl">${t||'Imóvel'}</span><div class="meta">Não selecionado</div></div>`;
+const imovelCard=(i,t)=>i?`<div class="pcard im">${i.foto?`<img src="${blob(i.foto)}" alt="" data-zoom>`:''}<div><span class="lbl">${t||'Imóvel'}</span><b>${esc([i.tipo,i.codigo].filter(Boolean).join(' · '))}</b><div class="meta">${esc(endereco(i)||'Endereço não cadastrado')}</div><div class="meta">${esc(i.descricao||'Sem descrição')}</div></div></div>`:`<div class="pcard"><span class="lbl">${t||'Imóvel'}</span><div class="meta">Não selecionado</div></div>`;
 const NEED=[['nacionalidade','nacionalidade'],['estadoCivil','estado civil'],['profissao','profissão'],['doc','CPF/CNPJ'],['endereco','endereço']];
 
 const MODS={
 pessoas:{nome:'Pessoas',sing:'pessoa',novo:'Nova pessoa',salvo:'Pessoa salva.',title:r=>r.nome||'Sem nome',
   defaults:()=>({tipo:'Inquilino',nacionalidade:'brasileiro(a)'}),sort:(a,b)=>(a.nome||'').localeCompare(b.nome||''),
-  fields:[{k:'nome',l:'Nome completo',t:'text',req:1,full:1},{k:'tipo',l:'Tipo',t:'sel',opt:OPT.tipoPessoa,req:1},{k:'nacionalidade',l:'Nacionalidade',t:'text'},
-    {k:'doc',l:'CPF / CNPJ',t:'text',ph:'000.000.000-00'},{k:'rg',l:'RG e órgão emissor',t:'text',ph:'0000000 SSP/RN'},
-    {k:'estadoCivil',l:'Estado civil',t:'sel',opt:OPT.estadoCivil},{k:'profissao',l:'Profissão',t:'text'},
+  prep:v=>{if(v.rg&&!v.rgOrgao){const m=String(v.rg).match(/^\s*([\dxX.\-]+)\s*[-–/,]?\s*([A-Za-zÀ-ú]{2,}.*)$/);if(m){v.rg=m[1];v.rgOrgao=m[2].trim()}}if(v.doc)v.doc=maskDoc(v.doc);return v},
+  fields:[{k:'nome',l:'Nome completo',t:'text',req:1,full:1,strong:1},{k:'tipo',l:'Tipo',t:'sel',opt:OPT.tipoPessoa,req:1},{k:'nacionalidade',l:'Nacionalidade',t:'text'},
+    {k:'dataNasc',l:'Data de nascimento',t:'date'},{k:'nomeMae',l:'Nome da mãe',t:'text'},
+    {t:'sec',l:'Documentos'},{k:'doc',l:'CPF / CNPJ',t:'text',ph:'000.000.000-00',mask:'doc',strong:1},{k:'rg',l:'RG (número)',t:'text',ph:'0.000.000',strong:1},
+    {k:'rgOrgao',l:'Órgão emissor / UF',t:'text',ph:'SSP/RN',strong:1},{k:'rgExpedicao',l:'Data de expedição do RG',t:'date'},
+    {t:'sec',l:'Contato e situação'},{k:'estadoCivil',l:'Estado civil',t:'sel',opt:OPT.estadoCivil},{k:'profissao',l:'Profissão',t:'text'},
     {k:'telefone',l:'Telefone',t:'text'},{k:'email',l:'E-mail',t:'text'},
     ...ADDR,{t:'sec',l:'Documento de identidade (fotos)'},{k:'docFrente',l:'Foto da identidade — FRENTE',t:'photo'},{k:'docVerso',l:'Foto da identidade — VERSO',t:'photo'},{t:'sec',l:'Outros'},{k:'banco',l:'Dados para repasse (banco / PIX)',t:'text',full:1},{k:'obs',l:'Observações',t:'area',full:1}],
   cols:[['Nome',r=>`<b>${esc(r.nome)}</b><div class="meta">${esc([r.profissao,r.estadoCivil].filter(Boolean).join(' · '))}</div>`],['Tipo',r=>B(r.tipo)],
-    ['Documento',r=>esc(r.doc||'—')+(r.rg?`<div class="meta">RG ${esc(r.rg)}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
+    ['Documento',r=>`<b>${esc(maskDoc(r.doc)||'—')}</b>`+(r.rg?`<div class="meta"><b>RG ${esc(r.rg)}${r.rgOrgao?' · '+esc(r.rgOrgao):''}</b>${r.rgExpedicao?' · exp. '+fd(r.rgExpedicao):''}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
     ['Endereço',r=>`<span class="meta">${esc(endereco(r)||'—')}</span>`]]},
 imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo.',title:r=>(r.codigo?r.codigo+' · ':'')+([r.logradouro,r.numero].filter(Boolean).join(', ')||r.endereco||'Sem endereço'),
   defaults:()=>({status:'Disponível',tipo:'Casa'}),sort:(a,b)=>(a.codigo||'').localeCompare(b.codigo||''),
@@ -910,8 +914,8 @@ LOCATÁRIO(A): {{inquilino.nome}}`;
 const MODELOS_DEF=[{nome:'Residencial',texto:MODELO},{nome:'Comercial',texto:MODELO_COM},{nome:'Temporada',texto:MODELO_TEMP}];
 const mdl=i=>{const s=(C.config.modelos||[])[i]||{};return {nome:s.nome||MODELOS_DEF[i].nome,texto:s.texto||(i===0&&C.config.modelo)||MODELOS_DEF[i].texto}};
 const mdlOf=c=>{const m=parseInt(c.modelo,10);return m>=0&&m<3?m:(c.finalidade==='comerciais'?1:0)};
-const CAMPOS=[['locador.nome','nome do locador'],['locador.doc','CPF/CNPJ do locador'],['locador.rg','RG do locador'],['locador.nacionalidade','nacionalidade do locador'],['locador.estadoCivil','estado civil do locador'],['locador.profissao','profissão do locador'],['locador.endereco','endereço do locador'],
-  ['inquilino.nome','nome do inquilino'],['inquilino.doc','CPF/CNPJ do inquilino'],['inquilino.rg','RG do inquilino'],['inquilino.nacionalidade','nacionalidade do inquilino'],['inquilino.estadoCivil','estado civil do inquilino'],['inquilino.profissao','profissão do inquilino'],['inquilino.endereco','endereço do inquilino'],
+const CAMPOS=[['locador.nome','nome do locador'],['locador.doc','CPF/CNPJ do locador'],['locador.rg','RG do locador'],['locador.dataNasc','nascimento do locador'],['locador.nacionalidade','nacionalidade do locador'],['locador.estadoCivil','estado civil do locador'],['locador.profissao','profissão do locador'],['locador.endereco','endereço do locador'],
+  ['inquilino.nome','nome do inquilino'],['inquilino.doc','CPF/CNPJ do inquilino'],['inquilino.rg','RG do inquilino'],['inquilino.rgExpedicao','expedição do RG do inquilino'],['inquilino.dataNasc','nascimento do inquilino'],['inquilino.nomeMae','mãe do inquilino'],['inquilino.nacionalidade','nacionalidade do inquilino'],['inquilino.estadoCivil','estado civil do inquilino'],['inquilino.profissao','profissão do inquilino'],['inquilino.endereco','endereço do inquilino'],
   ['fiador.nome','nome do fiador'],['fiador.doc','CPF/CNPJ do fiador'],['fiador.endereco','endereço do fiador'],
   ['imovel.endereco','endereço do imóvel'],['imovel.descricao','descrição do imóvel'],['imovel.tipo','tipo do imóvel'],['imovel.cidade','cidade do imóvel'],
   ['contrato.numero','número do contrato'],['contrato.inicio','data de início'],['contrato.fim','data de término'],['contrato.prazo','prazo em meses'],['contrato.aluguel','valor do aluguel'],['contrato.aluguelExtenso','aluguel por extenso'],
@@ -929,7 +933,7 @@ function extenso(v){v=Math.round(num(v)*100)/100;const r=Math.floor(v),c=Math.ro
   let s='';if(r)s=inteiro(r)+(r===1?' real':(r>=1e6&&r%1e6===0?' de reais':' reais'));
   if(c)s+=(s?' e ':'')+a999(c)+(c===1?' centavo':' centavos');return s||'zero reais'}
 function ctxOf(c){
-  const P=p=>p?{nome:p.nome,nacionalidade:p.nacionalidade,estadoCivil:p.estadoCivil,profissao:p.profissao,doc:p.doc,rg:p.rg,endereco:endereco(p),email:p.email,telefone:p.telefone}:null;
+  const P=p=>p?{nome:p.nome,nacionalidade:p.nacionalidade,estadoCivil:p.estadoCivil,profissao:p.profissao,doc:p.doc,rg:[p.rg,p.rgOrgao].filter(Boolean).join(' '),rgExpedicao:p.rgExpedicao?fd(p.rgExpedicao):'',dataNasc:p.dataNasc?fd(p.dataNasc):'',nomeMae:p.nomeMae,endereco:endereco(p),email:p.email,telefone:p.telefone}:null;
   const IM=get('imoveis',c.imovel);
   return {locador:P(get('pessoas',c.locador)),inquilino:P(get('pessoas',c.inquilino)),fiador:P(get('pessoas',c.fiador)),caucao:num(c.caucao)>0?true:null,
     imovel:IM?{endereco:endereco(IM),descricao:IM.descricao,tipo:IM.tipo,codigo:IM.codigo,cidade:IM.cidade}:{},
@@ -970,7 +974,11 @@ const MSG_DEF=`Olá! Tudo bem? Para fazer seu cadastro de locação{{imovel}}, p
 Nome completo: 
 Nacionalidade: 
 CPF: 
-RG (com órgão emissor): 
+Data de nascimento: 
+Nome da mãe: 
+RG: 
+Órgão emissor: 
+Data de expedição do RG: 
 Estado civil: 
 Profissão: 
 Telefone: 
@@ -985,7 +993,7 @@ Obrigado!{{empresa}}`;
 const msgTxt=()=>{const im=get('imoveis',C.npIm);return (C.config.msgCadastro||MSG_DEF).replace('{{imovel}}',im?` para o imóvel ${MODS.imoveis.title(im)}`:'').replace('{{empresa}}',C.config.empresa?'\n'+C.config.empresa:'')};
 function parseResposta(t){
   const o={},lines=String(t).split(/\r?\n/);
-  const MAP=[[/^nome/,'nome'],[/^nacional/,'nacionalidade'],[/^(cpf|cnpj)/,'doc'],[/^(rg|identidade|carteira)/,'rg'],[/^estado\s*civil/,'estadoCivil'],[/^profiss|^ocupa/,'profissao'],[/^(telefone|celular|whats|fone|contato)/,'telefone'],[/^e-?mail/,'email'],[/^endere/,'endereco']];
+  const MAP=[[/^nome da mae|^mae|^filiacao/,'nomeMae'],[/nascimento|^nascido/,'dataNasc'],[/expedi|emissao/,'rgExpedicao'],[/^orgao|emissor/,'rgOrgao'],[/^nome/,'nome'],[/^nacional/,'nacionalidade'],[/^(cpf|cnpj)/,'doc'],[/^(rg|identidade|carteira)/,'rg'],[/^estado\s*civil/,'estadoCivil'],[/^profiss|^ocupa/,'profissao'],[/^(telefone|celular|whats|fone|contato)/,'telefone'],[/^e-?mail/,'email'],[/^endere/,'endereco']];
   for(const ln of lines){const m=ln.match(/^\s*[\-\*•\d.)]*\s*([^:]{2,60}):\s*(.+?)\s*$/);if(!m)continue;
     const lab=m[1].normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();const hit=MAP.find(([re])=>re.test(lab));const val=m[2].replace(/\*/g,'').trim();if(hit){if(!o[hit[1]])o[hit[1]]=val}else(o._extra=o._extra||[]).push(m[1].trim()+': '+val)}
   if(o.estadoCivil){const e=o.estadoCivil.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -996,6 +1004,10 @@ function parseResposta(t){
     if(parts.length>=4){o.logradouro=parts[0];o.numero=parts[1];o.bairro=parts[2];o.cidade=parts.slice(3).join(', ')}
     else if(parts.length===3){o.logradouro=parts[0];o.numero=parts[1];o.cidade=parts[2]}else o.logradouro=parts.join(', ');
     delete o.endereco}
+  const toISO=x=>{const m=String(x).match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);if(!m)return undefined;let y=+m[3];if(y<100)y+=y>30?1900:2000;return y+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0')};
+  ['dataNasc','rgExpedicao'].forEach(k=>{if(o[k]){const v=toISO(o[k]);if(v)o[k]=v;else delete o[k]}});
+  if(o.rg&&!o.rgOrgao){const m=o.rg.match(/^\s*([\dxX.\-]+)\s*[-–/,]?\s*([A-Za-zÀ-ú]{2,}.*)$/);if(m){o.rg=m[1];o.rgOrgao=m[2].trim()}}
+  if(o.doc)o.doc=maskDoc(o.doc);
   if(o.telefone)o.telefone=o.telefone.replace(/[^\d()+\-\s]/g,'').trim();
   if(o._extra){o._extra='Outras respostas:\n'+o._extra.join('\n')}
   return o;
@@ -1063,7 +1075,18 @@ async function transferirPc(id){
   await put('pessoas',uid(),dados);await del('precad',id);toast((dados.nome||'Pessoa')+' cadastrado(a) em Pessoas como '+tipo+'.');
 }
 function verDocs(id){const p=get('pessoas',id);if(!p)return;const fs=[['Frente',p.docFrente],['Verso',p.docVerso]].filter(x=>x[1]);
-  modal(`<div class="wide"></div><h3>Identidade · ${esc(p.nome)}</h3><div class="body"><div class="gal">${fs.map(([l,i])=>`<figure style="margin:0"><a href="${blob(i)}" target="_blank" rel="noopener"><img src="${blob(i)}" alt="${l}" style="aspect-ratio:auto;object-fit:contain;background:var(--surface-2)"></a><figcaption class="meta" style="text-align:center;margin-top:4px">${l}</figcaption></figure>`).join('')}</div></div><div class="sheet-f"><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close})}
+  modal(`<div class="wide"></div><h3>Identidade · ${esc(p.nome)}</h3><div class="body"><div class="gal">${fs.map(([l,i])=>`<figure style="margin:0"><a href="${blob(i)}" target="_blank" rel="noopener" data-zoomlink><img src="${blob(i)}" alt="${l}" data-zoom style="aspect-ratio:auto;object-fit:contain;background:var(--surface-2)"></a><figcaption class="meta" style="text-align:center;margin-top:4px">${l}</figcaption></figure>`).join('')}</div></div><div class="sheet-f"><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close})}
+
+/* ---------- ampliar fotos ---------- */
+function lightbox(src){
+  const o=document.createElement('div');o.className='lbx';o.setAttribute('role','dialog');o.setAttribute('aria-label','Foto ampliada');let rot=0,z=false;
+  o.innerHTML=`<div class="lbx-bar"><button type="button" data-l="rot" title="Girar">⟳ Girar</button><button type="button" data-l="zoom" title="Aproximar">＋ Zoom</button><a href="${src}" target="_blank" rel="noopener">Abrir em nova aba</a><button type="button" data-l="x" title="Fechar">✕ Fechar</button></div><div class="lbx-img"><img src="${src}" alt="Foto ampliada"></div>`;
+  const img=o.querySelector('img'),ap=()=>{img.style.transform=`rotate(${rot}deg) scale(${z?2:1})`;img.style.cursor=z?'zoom-out':'zoom-in'};
+  const fechar=()=>{o.remove();document.removeEventListener('keydown',kd,true)};const kd=e=>{if(e.key==='Escape'){e.stopPropagation();fechar()}};
+  o.addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b){if(b.dataset.l==='x')fechar();if(b.dataset.l==='rot'){rot=(rot+90)%360;ap()}if(b.dataset.l==='zoom'){z=!z;ap()}return}if(e.target===img){z=!z;ap();return}if(!e.target.closest('a'))fechar()});
+  document.addEventListener('keydown',kd,true);document.body.appendChild(o);ap();
+}
+document.addEventListener('click',e=>{const im=e.target.closest('img[data-zoom]');if(!im)return;if(im.closest('.lbx'))return;e.preventDefault();e.stopPropagation();lightbox(im.currentSrc||im.src)},true);
 
 /* ---------- media ---------- */
 const MEDIA_OK=['image/png','image/jpeg','image/gif','image/webp','video/mp4','video/webm'];
@@ -1080,12 +1103,12 @@ async function uploadFile(file){
 const upErr=e=>({unsupported_type:'Formato não aceito. Use fotos JPG/PNG ou vídeos MP4.',too_large:'Arquivo maior que 20 MB. Grave um vídeo mais curto ou envie em partes.',quota_or_state:'O espaço de arquivos acabou.',quota_exceeded:'O limite gratuito do banco de dados foi atingido hoje. Tente amanhã.',unavailable:'Sem conexão com a internet. Tente de novo quando estiver on-line.',rate_limited:'Muitos envios seguidos. Espere um pouco e tente de novo.',not_granted:'Você não tem permissão para enviar arquivos aqui.'}[e&&e.code]||'Não foi possível enviar o arquivo. Tente de novo.');
 function drawMedia(el,f){
   const box=el.querySelector(`[data-media="${f.k}"] .mlist`);if(!box)return;const arr=el._media[f.k];
-  box.innerHTML=arr.map((m,i)=>`<div class="mitem">${m.tipo==='video'?`<video src="${blob(m.id)}" muted preload="metadata"></video><span class="vtag">${ICON.play}</span>`:`<img src="${blob(m.id)}" alt="">`}<button type="button" class="mdel" data-mdel="${f.k}:${i}" aria-label="Remover">${ICON.x}</button></div>`).join('');
+  box.innerHTML=arr.map((m,i)=>`<div class="mitem">${m.tipo==='video'?`<video src="${blob(m.id)}" muted preload="metadata"></video><span class="vtag">${ICON.play}</span>`:`<img src="${blob(m.id)}" alt="" data-zoom title="Clique para ampliar">`}<button type="button" class="mdel" data-mdel="${f.k}:${i}" aria-label="Remover">${ICON.x}</button></div>`).join('');
 }
 function gallery(id){
   const v=get('vistorias',id);if(!v)return;const m=Array.isArray(v.midia)?v.midia:[];
   modal(`<div class="wide"></div><h3>${esc(MODS.vistorias.title(MODS.vistorias.prep({...v})))}</h3><p>${esc(nome('imoveis',v.imovel))} · ${esc(endereco(get('imoveis',v.imovel)))}</p>
-  <div class="body"><div class="gal">${m.map(x=>x.tipo==='video'?`<video src="${blob(x.id)}" controls preload="metadata"></video>`:`<a href="${blob(x.id)}" target="_blank" rel="noopener"><img src="${blob(x.id)}" alt="${esc(x.nome||'')}"></a>`).join('')}</div>
+  <div class="body"><div class="gal">${m.map(x=>x.tipo==='video'?`<video src="${blob(x.id)}" controls preload="metadata"></video>`:`<a href="${blob(x.id)}" target="_blank" rel="noopener" data-zoomlink><img data-zoom src="${blob(x.id)}" alt="${esc(x.nome||'')}"></a>`).join('')}</div>
   ${v.itens?`<div class="meta" style="white-space:pre-wrap;margin-top:10px">${esc(v.itens)}</div>`:''}</div><div class="sheet-f"><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close});
 }
 
@@ -1100,11 +1123,11 @@ function fieldHtml(f,v,pre){
     input=`<select id="${id}" data-k="${f.k}"><option value="">${list.length?'Selecione…':'Nenhum cadastrado ainda'}</option>${list.map(r=>`<option value="${esc(r.id)}" ${r.id===v?'selected':''}>${esc(T(r))}</option>`).join('')}</select>`}
   else if(f.t==='multi'){const sel=Array.isArray(v)?v:(v?[v]:[]);input=`<div class="mchips" id="${id}" role="group">${f.opt.map(o=>`<label class="mchk"><input type="checkbox" value="${esc(o)}" ${sel.includes(o)?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div>`}
   else if(f.t==='area')input=`<textarea id="${id}" data-k="${f.k}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>${esc(v||'')}</textarea>`;
-  else if(f.t==='photo'||f.t==='media')input=`<div class="media" data-media="${f.k}"><div class="mlist"></div>${C.assets?`<label class="btn upl">${ICON.cam} ${f.t==='photo'?'Escolher foto':'Adicionar fotos ou vídeos'}<input type="file" id="${id}" data-mfile="${f.k}" accept="${f.t==='photo'?'image/*':'image/*,video/mp4,video/webm'}" ${f.t==='media'?'multiple':''}></label>`:'<span class="meta">O envio de arquivos funciona no aplicativo publicado, para quem pode editar.</span>'}<span class="meta mstat"></span></div>`;
+  else if(f.t==='photo'||f.t==='media')input=`<div class="media${f.t==='photo'?' mphoto':''}" data-media="${f.k}"><div class="mlist"></div>${C.assets?`<label class="btn upl">${ICON.cam} ${f.t==='photo'?'Escolher foto':'Adicionar fotos ou vídeos'}<input type="file" id="${id}" data-mfile="${f.k}" accept="${f.t==='photo'?'image/*':'image/*,video/mp4,video/webm'}" ${f.t==='media'?'multiple':''}></label>`:'<span class="meta">O envio de arquivos funciona no aplicativo publicado, para quem pode editar.</span>'}<span class="meta mstat"></span></div>`;
   else{const type=f.t==='date'?'date':f.t==='month'?'month':'text';
     const val=v==null||v===''?'':f.t==='money'?num(v).toFixed(2).replace('.',','):f.t==='num'?String(v).replace('.',','):v;
-    input=`<input id="${id}" data-k="${f.k}" type="${type}" ${f.t==='money'||f.t==='num'?'inputmode="decimal"':''} value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>`}
-  return `<div class="${cls}"${fw}><label for="${id}">${esc(f.l)}${f.req?' *':''}</label>${input}${f.hint?`<span class="meta">${esc(f.hint)}</span>`:''}</div>`;
+    input=`<input id="${id}" data-k="${f.k}" type="${type}" ${f.mask?`data-mask="${f.mask}" inputmode="numeric" maxlength="18"`:''} ${f.t==='money'||f.t==='num'?'inputmode="decimal"':''} value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>`}
+  return `<div class="${cls}"${fw}><label for="${id}"${f.strong?' class="lstrong"':''}>${esc(f.l)}${f.req?' *':''}</label>${input}${f.hint?`<span class="meta">${esc(f.hint)}</span>`:''}</div>`;
 }
 function readFields(el,fields,pre){const o={};fields.forEach(f=>{if(!f.k)return;
   if(f.t==='photo'||f.t==='media'){const a=(el._media&&el._media[f.k])||[];if(f.t==='photo'){if(a[0])o[f.k]=a[0].id}else if(a.length)o[f.k]=a.slice();return}
@@ -1112,6 +1135,7 @@ function readFields(el,fields,pre){const o={};fields.forEach(f=>{if(!f.k)return;
   const e=el.querySelector('#'+(pre||'cmf-')+f.k);if(!e)return;const raw=e.value.trim();if(raw==='')return;o[f.k]=(f.t==='money'||f.t==='num')?parseMoney(raw):raw});return o}
 function checkFields(o,fields){
   const miss=fields.filter(f=>f.req&&(o[f.k]==null||o[f.k]==='')).map(f=>f.l);if(miss.length)return 'Preencha: '+miss.join(', ')+'.';
+  const dm=fields.find(f=>f.mask==='doc'&&o[f.k]&&![11,14].includes(String(o[f.k]).replace(/\D/g,'').length));if(dm)return 'O CPF precisa ter 11 números (ou o CNPJ 14 números).';
   const bad=fields.filter(f=>(f.t==='money'||f.t==='num')&&o[f.k]!=null&&!isFinite(o[f.k])).map(f=>f.l);if(bad.length)return 'Valor inválido em: '+bad.join(', ')+'. Use números como 1.250,00.';
   return '';
 }
@@ -1133,7 +1157,7 @@ function openForm(c,row,pre){
         stat.textContent='';busy--;upd();return}
       const k=e.target.dataset.k;if(k&&M.onChange)M.onChange(k,readFields(el,M.fields),set);upd()});
     form.addEventListener('click',e=>{const d=e.target.closest('[data-mdel]');if(!d)return;const [k,i]=d.dataset.mdel.split(':');el._media[k].splice(+i,1);drawMedia(el,M.fields.find(x=>x.k===k))});
-    form.addEventListener('input',upd);upd();
+    form.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.mask==='doc'){const pos=t.value.length===t.selectionStart;t.value=maskDoc(t.value);if(pos)t.selectionStart=t.selectionEnd=t.value.length}upd()});upd();
     el.querySelector('[data-x]').onclick=close;
     const d=el.querySelector('[data-del]');if(d)d.onclick=()=>{close();removeRow(c,row.id)};
     const ok=async doc=>{if(busy){el.querySelector('#cmerr').textContent='Aguarde terminar o envio dos arquivos.';return}
@@ -1498,7 +1522,7 @@ const REL={
       ['Taxa de administração de '+fm(CUR),sum(mes,'taxaAdm')],['Lucro previsto nos próximos 12 meses',tot.reduce((s,t)=>s+t.r+t.rp-t.d,0)],['Chamados de manutenção em aberto',rows('manutencao').filter(m=>m.status!=='Concluído').length]]));
     xlSheet(wb,'Imóveis','Imóveis',geradoEm(),[{h:'Código',k:'codigo',w:10},{h:'Tipo',k:'tipo',w:14},{h:'Endereço',k:'end',w:44},{h:'Locador',k:'loc',w:26},{h:'Aluguel',k:'aluguel',t:'money'},{h:'Condomínio',k:'condominio',t:'money'},{h:'IPTU',k:'iptu',t:'money'},{h:'Situação',k:'status',w:14},{h:'Quartos',k:'quartos',t:'num',w:9},{h:'Área (m²)',k:'area',t:'num',w:10},{h:'Descrição',k:'descricao',w:50}],
       im.sort(MODS.imoveis.sort).map(i=>({...i,end:endereco(i),loc:nome('pessoas',i.locador)})));
-    xlSheet(wb,'Pessoas','Pessoas',geradoEm(),[{h:'Nome',k:'nome',w:30},{h:'Tipo',k:'tipo',w:11},{h:'CPF/CNPJ',k:'doc',w:18},{h:'RG',k:'rg',w:18},{h:'Estado civil',k:'estadoCivil',w:14},{h:'Profissão',k:'profissao',w:18},{h:'Telefone',k:'telefone',w:16},{h:'E-mail',k:'email',w:26},{h:'Endereço',k:'end',w:44}],
+    xlSheet(wb,'Pessoas','Pessoas',geradoEm(),[{h:'Nome',k:'nome',w:30},{h:'Tipo',k:'tipo',w:11},{h:'CPF/CNPJ',k:'doc',w:18},{h:'RG',k:'rg',w:14},{h:'Órgão emissor',k:'rgOrgao',w:12},{h:'Expedição RG',k:'rgExpedicao',t:'date'},{h:'Nascimento',k:'dataNasc',t:'date'},{h:'Nome da mãe',k:'nomeMae',w:28},{h:'Estado civil',k:'estadoCivil',w:14},{h:'Profissão',k:'profissao',w:18},{h:'Telefone',k:'telefone',w:16},{h:'E-mail',k:'email',w:26},{h:'Endereço',k:'end',w:44}],
       rows('pessoas').sort(MODS.pessoas.sort).map(p=>({...p,end:endereco(p)})));
     xlSheet(wb,'Contratos','Contratos',geradoEm(),[{h:'Nº',k:'numero',w:10},{h:'Imóvel',k:'im',w:30},{h:'Inquilino',k:'inq',w:26},{h:'Locador',k:'loc',w:26},{h:'Início',k:'inicio',t:'date'},{h:'Término',k:'fim',t:'date'},{h:'Aluguel',k:'aluguel',t:'money'},{h:'Índice',k:'indice',w:9},{h:'Próx. reajuste',k:'prox',t:'date'},{h:'Garantia',k:'garantia',w:16},{h:'Situação',k:'status',w:11}],
       ct.sort(MODS.contratos.sort).map(c=>({...c,im:nome('imoveis',c.imovel),inq:nome('pessoas',c.inquilino),loc:nome('pessoas',c.locador),prox:proxReaj(c)})));
