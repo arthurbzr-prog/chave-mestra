@@ -834,9 +834,11 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 
 _______________________________________
 LOCADOR(A): {{locador.nome}}
+CPF/CNPJ: {{locador.doc}}
 
 _______________________________________
 LOCATÁRIO(A): {{inquilino.nome}}
+CPF/CNPJ: {{inquilino.doc}}
 {{#fiador}}
 _______________________________________
 FIADOR(A): {{fiador.nome}}
@@ -922,9 +924,11 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 
 _______________________________________
 LOCADOR(A): {{locador.nome}}
+CPF/CNPJ: {{locador.doc}}
 
 _______________________________________
 LOCATÁRIO(A): {{inquilino.nome}}
+CPF/CNPJ: {{inquilino.doc}}
 {{#fiador}}
 _______________________________________
 FIADOR(A): {{fiador.nome}}
@@ -992,9 +996,11 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 
 _______________________________________
 LOCADOR(A): {{locador.nome}}
+CPF/CNPJ: {{locador.doc}}
 
 _______________________________________
 LOCATÁRIO(A): {{inquilino.nome}}
+CPF/CNPJ: {{inquilino.doc}}
 
 TESTEMUNHAS:
 1. ______________________________  CPF: ________________
