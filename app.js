@@ -719,9 +719,10 @@ manutencao:{nome:'Manutenção',sing:'chamado',novo:'Abrir chamado',salvo:'Chama
     {k:'abertura',l:'Abertura do chamado',t:'date',req:1},{k:'prioridade',l:'Prioridade',t:'sel',opt:OPT.prioridade},
     {k:'categorias',l:'O que vai ser feito (marque um ou mais)',t:'multi',opt:OPT.catManut,full:1,req:1},{k:'responsavel',l:'Responsável / prestador',t:'text',full:1},
     {k:'custo',l:'Custo (R$)',t:'money',hint:'Vai para as despesas do imóvel no Financeiro.'},{k:'pagoPor',l:'Pago por',t:'sel',opt:OPT.pagoPor},
-    {k:'status',l:'Situação',t:'sel',opt:OPT.statusManut},{k:'conclusao',l:'Concluído em',t:'date'},{k:'obs',l:'Observações',t:'area',full:1}],
+    {k:'status',l:'Situação',t:'sel',opt:OPT.statusManut},{k:'conclusao',l:'Concluído em',t:'date'},{k:'obs',l:'Observações',t:'area',full:1},
+    {k:'midia',l:'Fotos e vídeos do chamado (problema, orçamento, serviço pronto)',t:'media',full:1}],
   onChange:(k,v,set)=>{if(k==='status'&&v.status==='Concluído'&&!v.conclusao)set('conclusao',TODAY)},
-  cols:[['Abertura',r=>fd(r.abertura)],['Chamado',r=>`<b>${esc(r.descricao)}</b><div class="meta">${esc(nome('imoveis',r.imovel))}</div><div class="cats">${catsOf(r).map(c=>`<span class="badge info">${esc(c)}</span>`).join('')}</div>`],
+  cols:[['Abertura',r=>fd(r.abertura)],['Chamado',r=>`<b>${esc(r.descricao)}</b><div class="meta">${esc(nome('imoveis',r.imovel))}</div><div class="cats">${catsOf(r).map(c=>`<span class="badge info">${esc(c)}</span>`).join('')}</div>${Array.isArray(r.midia)&&r.midia.length?`<button class="btn sm" style="margin-top:4px" data-galm="${esc(r.id)}">${ICON.cam} ${r.midia.length} ${r.midia.length===1?'foto':'fotos'}</button>`:''}`],
     ['Prioridade',r=>B(r.prioridade)],['Custo',M$('custo'),1],['Pago por',r=>esc(r.pagoPor||'—')],['Situação',r=>B(r.status)+(r.conclusao?` <span class="meta">${fd(r.conclusao)}</span>`:'')]],
   filt:r=>(!C.mnCat||catsOf(r).includes(C.mnCat))&&(!C.mnSt||(C.mnSt==='abertos'?r.status!=='Concluído':r.status==='Concluído')),
   tools:()=>`<select id="mnCat" class="search" style="width:auto" aria-label="Filtrar por serviço"><option value="">Todos os serviços</option>${OPT.catManut.map(c=>`<option ${C.mnCat===c?'selected':''}>${esc(c)}</option>`).join('')}</select><select id="mnSt" class="search" style="width:auto" aria-label="Filtrar por situação"><option value="">Todas as situações</option><option value="abertos" ${C.mnSt==='abertos'?'selected':''}>Em aberto</option><option value="concluidos" ${C.mnSt==='concluidos'?'selected':''}>Concluídos</option></select>`},
@@ -1151,6 +1152,12 @@ function drawMedia(el,f){
   const box=el.querySelector(`[data-media="${f.k}"] .mlist`);if(!box)return;const arr=el._media[f.k];
   box.innerHTML=arr.map((m,i)=>`<div class="mitem">${m.tipo==='video'?`<video src="${blob(m.id)}" muted preload="metadata"></video><span class="vtag">${ICON.play}</span>`:`<img src="${blob(m.id)}" alt="" data-zoom title="Clique para ampliar">`}<button type="button" class="mdel" data-mdel="${f.k}:${i}" aria-label="Remover">${ICON.x}</button></div>`).join('');
 }
+function galeriaManut(id){
+  const r=get('manutencao',id);if(!r)return;const m=Array.isArray(r.midia)?r.midia:[];
+  modal(`<div class="wide"></div><h3>${esc(r.descricao||'Chamado')}</h3><p>${esc(nome('imoveis',r.imovel))} · aberto em ${fd(r.abertura)} · ${esc(r.status||'')}</p>
+  <div class="body"><div class="gal">${m.map(x=>x.tipo==='video'?`<video src="${blob(x.id)}" controls preload="metadata"></video>`:`<img data-zoom src="${blob(x.id)}" alt="${esc(x.nome||'')}">`).join('')}</div>
+  ${r.obs?`<div class="meta" style="white-space:pre-wrap;margin-top:10px">${esc(r.obs)}</div>`:''}</div><div class="sheet-f"><button class="btn" data-ed>Editar chamado</button><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close;el.querySelector('[data-ed]').onclick=()=>{close();openForm('manutencao',get('manutencao',id))}});
+}
 function gallery(id){
   const v=get('vistorias',id);if(!v)return;const m=Array.isArray(v.midia)?v.midia:[];
   modal(`<div class="wide"></div><h3>${esc(MODS.vistorias.title(MODS.vistorias.prep({...v})))}</h3><p>${esc(nome('imoveis',v.imovel))} · ${esc(endereco(get('imoveis',v.imovel)))}</p>
@@ -1509,6 +1516,7 @@ $('#app-cm').addEventListener('click',async e=>{
   if(t.dataset.reaj){reajuste(t.dataset.reaj);return}
   if(t.dataset.docc){gerarDoc(t.dataset.docc);return}
   if(t.dataset.printv){const w=abrirJanelaImpressao();imprimirVistoria(t.dataset.printv,w);return}
+  if(t.dataset.galm){galeriaManut(t.dataset.galm);return}
   if(t.dataset.gal){gallery(t.dataset.gal);return}
   if(t.dataset.pagar){pagar(t.dataset.pagar);return}
   if(t.hasAttribute('data-gerar')){gerar();return}
