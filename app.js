@@ -511,6 +511,12 @@ const M$=k=>r=>`<span class="num">${fmt(num(r[k]))}</span>`;
 function prazoBadge(d){if(d==null)return '';if(d<0)return bdg('atrasado há '+(-d)+' d','bad');if(d===0)return bdg('hoje','bad');if(d<=num(C.config.alertaDias||30))return bdg('em '+d+' d','warn');return ''}
 const PRIO={Urgente:0,Alta:1,'Média':2,Baixa:3};
 const maskDoc=v=>{const d=String(v||'').replace(/\D/g,'').slice(0,14);if(!d)return '';if(d.length<=11)return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'.$1-$2');return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/,(m,a,b,c,e,f)=>a+'.'+b+'.'+c+'/'+e+(f?'-'+f:''))};
+const CONSULTAS_HTML=()=>`<div class="consbox"><b>Consultas rápidas</b> <span class="meta">(com autorização da pessoa)</span>
+<div class="conslinks"><a class="btn sm" href="https://www.serasa.com.br/voceconsulta/" target="_blank" rel="noopener">Serasa · consultar CPF de terceiros</a>
+<a class="btn sm" href="https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais" target="_blank" rel="noopener">Antecedentes criminais · Polícia Federal</a>
+<a class="btn sm" href="https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp" target="_blank" rel="noopener">Situação do CPF · Receita Federal</a></div>
+<div class="meta">Abra a consulta, veja o resultado e registre aqui embaixo (situação, data e um print ou PDF do comprovante).</div></div>`;
+const consBadges=r=>{const s=r.serasaStatus,a=r.antStatus,o=[];if(s&&s!=='Não consultado')o.push(bdg('Serasa: '+s,s==='Nome limpo'?'ok':'bad'));if(a&&a!=='Não consultado')o.push(bdg('Antecedentes: '+a,a==='Nada consta'?'ok':'bad'));return o.join(' ')};
 const catsOf=r=>Array.isArray(r.categorias)&&r.categorias.length?r.categorias:(r.categoria?[r.categoria]:[]);
 const compOf=r=>(r.data||'').slice(0,7);
 const INTV={2:'bimestral',3:'trimestral',4:'quadrimestral',6:'semestral',12:'anual'};
@@ -589,9 +595,16 @@ pessoas:{nome:'Pessoas',sing:'pessoa',novo:'Nova pessoa',salvo:'Pessoa salva.',t
     {k:'rgOrgao',l:'Órgão emissor / UF',t:'text',ph:'SSP/RN',strong:1},{k:'rgExpedicao',l:'Data de expedição do RG',t:'date'},
     {t:'sec',l:'Contato e situação'},{k:'estadoCivil',l:'Estado civil',t:'sel',opt:OPT.estadoCivil},{k:'profissao',l:'Profissão',t:'text'},
     {k:'telefone',l:'Telefone',t:'text'},{k:'email',l:'E-mail',t:'text'},
-    ...ADDR,{t:'sec',l:'Documento de identidade (fotos)'},{k:'docFrente',l:'Foto da identidade — FRENTE',t:'photo'},{k:'docVerso',l:'Foto da identidade — VERSO',t:'photo'},{t:'sec',l:'Outros'},{k:'banco',l:'Dados para repasse (banco / PIX)',t:'text',full:1},{k:'obs',l:'Observações',t:'area',full:1}],
+    ...ADDR,{t:'sec',l:'Consultas: Serasa e antecedentes criminais'},{t:'html',html:()=>CONSULTAS_HTML()},
+    {k:'consentimento',l:'Autorizou as consultas?',t:'sel',opt:['Não informado','Sim','Não']},{k:'serasaStatus',l:'Serasa / SPC',t:'sel',opt:['Não consultado','Nome limpo','Com restrições']},
+    {k:'serasaData',l:'Data da consulta Serasa',t:'date'},{k:'serasaObs',l:'Resultado Serasa (score, pendências)',t:'text'},
+    {k:'serasaArq',l:'Comprovante Serasa (print, foto ou PDF)',t:'photo',pdf:1},
+    {k:'antStatus',l:'Antecedentes criminais',t:'sel',opt:['Não consultado','Nada consta','Consta registro']},{k:'antData',l:'Data da certidão',t:'date'},
+    {k:'antOrgao',l:'Órgão da certidão',t:'text',ph:'Polícia Federal, TJ, SSP…'},
+    {k:'antArq',l:'Certidão de antecedentes (print, foto ou PDF)',t:'photo',pdf:1},
+    {t:'sec',l:'Documento de identidade (fotos)'},{k:'docFrente',l:'Foto da identidade — FRENTE',t:'photo'},{k:'docVerso',l:'Foto da identidade — VERSO',t:'photo'},{t:'sec',l:'Outros'},{k:'banco',l:'Dados para repasse (banco / PIX)',t:'text',full:1},{k:'obs',l:'Observações',t:'area',full:1}],
   cols:[['Nome',r=>`<b>${esc(r.nome)}</b><div class="meta">${esc([r.profissao,r.estadoCivil].filter(Boolean).join(' · '))}</div>`],['Tipo',r=>B(r.tipo)],
-    ['Documento',r=>`<b>${esc(maskDoc(r.doc)||'—')}</b>`+(r.rg?`<div class="meta"><b>RG ${esc(r.rg)}${r.rgOrgao?' · '+esc(r.rgOrgao):''}</b>${r.rgExpedicao?' · exp. '+fd(r.rgExpedicao):''}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
+    ['Documento',r=>`<b>${esc(maskDoc(r.doc)||'—')}</b>`+(r.rg?`<div class="meta"><b>RG ${esc(r.rg)}${r.rgOrgao?' · '+esc(r.rgOrgao):''}</b>${r.rgExpedicao?' · exp. '+fd(r.rgExpedicao):''}</div>`:'')+(consBadges(r)?`<div class="cats">${consBadges(r)}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
     ['Endereço',r=>`<span class="meta">${esc(endereco(r)||'—')}</span>`]]},
 imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo.',title:r=>(r.codigo?r.codigo+' · ':'')+([r.logradouro,r.numero].filter(Boolean).join(', ')||r.endereco||'Sem endereço'),
   defaults:()=>({status:'Disponível',tipo:'Casa'}),sort:(a,b)=>(a.codigo||'').localeCompare(b.codigo||''),
@@ -997,12 +1010,15 @@ E envie também 2 fotos da sua identidade (RG ou CNH):
 1ª foto: FRENTE do documento
 2ª foto: VERSO do documento
 
+Autorizo a consulta do meu CPF no Serasa/SPC e de antecedentes criminais (Sim/Não): 
+Se puder, envie também a Certidão de Antecedentes Criminais da Polícia Federal (emitida grátis em gov.br).
+
 Obrigado!{{empresa}}`;
 const msgTxt=()=>{const im=get('imoveis',C.npIm);return (C.config.msgCadastro||MSG_DEF).replace('{{imovel}}',im?` para o imóvel ${MODS.imoveis.title(im)}`:'').replace('{{empresa}}',C.config.empresa?'\n'+C.config.empresa:'')};
 function parseResposta(t){
   const o={},lines=String(t).split(/\r?\n/);
-  const MAP=[[/^nome da mae|^mae|^filiacao/,'nomeMae'],[/nascimento|^nascido/,'dataNasc'],[/expedi|emissao/,'rgExpedicao'],[/^orgao|emissor/,'rgOrgao'],[/^nome/,'nome'],[/^nacional/,'nacionalidade'],[/^(cpf|cnpj)/,'doc'],[/^(rg|identidade|carteira)/,'rg'],[/^estado\s*civil/,'estadoCivil'],[/^profiss|^ocupa/,'profissao'],[/^(telefone|celular|whats|fone|contato)/,'telefone'],[/^e-?mail/,'email'],[/^endere/,'endereco']];
-  for(const ln of lines){const m=ln.match(/^\s*[\-\*•\d.)]*\s*([^:]{2,60}):\s*(.+?)\s*$/);if(!m)continue;
+  const MAP=[[/^nome da mae|^mae|^filiacao/,'nomeMae'],[/nascimento|^nascido/,'dataNasc'],[/expedi|emissao/,'rgExpedicao'],[/^orgao|emissor/,'rgOrgao'],[/^nome/,'nome'],[/^nacional/,'nacionalidade'],[/^(cpf|cnpj)/,'doc'],[/^(rg|identidade|carteira)/,'rg'],[/^estado\s*civil/,'estadoCivil'],[/^profiss|^ocupa/,'profissao'],[/^(telefone|celular|whats|fone|contato)/,'telefone'],[/^e-?mail/,'email'],[/^endere/,'endereco'],[/^autorizo|autoriza|consulta do/,'consentimento']];
+  for(const ln of lines){const m=ln.match(/^\s*[\-\*•\d.)]*\s*([^:]{2,140}):\s*(.+?)\s*$/);if(!m)continue;
     const lab=m[1].normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();const hit=MAP.find(([re])=>re.test(lab));const val=m[2].replace(/\*/g,'').trim();if(hit){if(!o[hit[1]])o[hit[1]]=val}else(o._extra=o._extra||[]).push(m[1].trim()+': '+val)}
   if(o.estadoCivil){const e=o.estadoCivil.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
     o.estadoCivil=/uniao|estavel/.test(e)?'União estável':/casad/.test(e)?'Casado(a)':/divorc/.test(e)?'Divorciado(a)':/separad/.test(e)?'Separado(a)':/viuv/.test(e)?'Viúvo(a)':/solteir/.test(e)?'Solteiro(a)':''}
@@ -1016,6 +1032,7 @@ function parseResposta(t){
   ['dataNasc','rgExpedicao'].forEach(k=>{if(o[k]){const v=toISO(o[k]);if(v)o[k]=v;else delete o[k]}});
   if(o.rg&&!o.rgOrgao){const m=o.rg.match(/^\s*([\dxX.\-]+)\s*[-–/,]?\s*([A-Za-zÀ-ú]{2,}.*)$/);if(m){o.rg=m[1];o.rgOrgao=m[2].trim()}}
   if(o.doc)o.doc=maskDoc(o.doc);
+  if(o.consentimento){const c=o.consentimento.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();o.consentimento=/^s/.test(c)?'Sim':/^n/.test(c)?'Não':'Não informado'}
   if(o.telefone)o.telefone=o.telefone.replace(/[^\d()+\-\s]/g,'').trim();
   if(o._extra){o._extra='Outras respostas:\n'+o._extra.join('\n')}
   return o;
@@ -1041,10 +1058,11 @@ function renderNovaPessoa(){
   <div class="card" id="pcList"><div class="card-h"><h2><span class="stepn">3</span> Pré-cadastros recebidos</h2><span class="meta">${pcs.length}</span></div>
   ${pcs.length?`<ul class="plist">${pcs.map(r=>{const fotos=(r.docFrente?1:0)+(r.docVerso?1:0),dup=r.doc&&rows('pessoas').find(p=>p.doc&&p.doc.replace(/\D/g,'')===r.doc.replace(/\D/g,''));
     return `<li class="pcrow"><div style="min-width:0"><b>${esc(r.nome||'Sem nome')}</b><div class="meta">${esc([r.doc&&'CPF '+r.doc,r.telefone,r.profissao].filter(Boolean).join(' · ')||'—')}</div>
-      <div class="meta">Recebido ${fd(r.recebidoEm)}${r.interesse&&get('imoveis',r.interesse)?' · interesse: '+esc(MODS.imoveis.title(get('imoveis',r.interesse))):''} · ${fotos===2?bdg('RG frente e verso','ok'):fotos===1?bdg('falta 1 foto do RG','warn'):bdg('sem fotos do RG','')}${dup?' '+bdg('CPF já está em Pessoas','warn'):''}</div></div>
+      <div class="meta">Recebido ${fd(r.recebidoEm)}${r.interesse&&get('imoveis',r.interesse)?' · interesse: '+esc(MODS.imoveis.title(get('imoveis',r.interesse))):''} · ${fotos===2?bdg('RG frente e verso','ok'):fotos===1?bdg('falta 1 foto do RG','warn'):bdg('sem fotos do RG','')}${dup?' '+bdg('CPF já está em Pessoas','warn'):''}${r.consentimento?' '+bdg('Autorizou consultas: '+r.consentimento,r.consentimento==='Sim'?'ok':''):''} ${consBadges(r)}</div></div>
       <div class="pcact"><div class="pcf"><label for="pcd-${esc(r.id)}">Carregar os dados em</label><select id="pcd-${esc(r.id)}" class="search" data-pcdest="${esc(r.id)}">${pcDestOpts(r)}</select></div><div class="pcf"><label for="pct-${esc(r.id)}">Classificação</label><select id="pct-${esc(r.id)}" class="search" style="width:auto" data-pctipo="${esc(r.id)}">${OPT.tipoPessoa.map(t=>`<option ${t===(r.tipo||'Inquilino')?'selected':''}>${t}</option>`).join('')}</select></div>
       <button class="btn sm" data-col="precad" data-edit="${esc(r.id)}">${ICON.edit} Conferir / fotos</button><button class="btn sm primary" data-pctrans="${esc(r.id)}">Transferir para Pessoas</button></div></li>`}).join('')}</ul>`:'<div class="empty">Nenhum pré-cadastro. Cole a resposta de uma pessoa acima e clique em “Salvar no pré-cadastro”.</div>'}
-  <div class="note">Confira os dados, anexe as fotos da identidade (frente e verso), escolha a classificação e transfira. A pessoa sai daqui e entra em Pessoas, pronta para o contrato.</div></div>
+  <div class="note">Confira os dados, anexe as fotos da identidade (frente e verso), registre as consultas (Serasa e antecedentes), escolha a classificação e transfira. A pessoa sai daqui e entra em Pessoas, pronta para o contrato.</div></div>
+  <div class="card"><div class="card-h"><h2><span class="stepn">4</span> Consultas de Serasa e antecedentes</h2></div><div style="padding:16px">${CONSULTAS_HTML()}<div class="meta" style="margin-top:8px">O resultado de cada consulta é registrado no cadastro da pessoa (botão “Conferir / fotos” ou em Pessoas → editar), na parte “Consultas”.</div></div></div>
   </div>`;
 }
 function editarMsg(){
@@ -1145,13 +1163,14 @@ async function uploadFile(file){
   if(!C.assets)throw {code:'not_granted'};
   let b=file,type=file.type||'',tipo='image';
   if(type.startsWith('video/')){tipo='video';if(!MEDIA_OK.includes(type))throw {code:'unsupported_type'}}
+  else if(type==='application/pdf'){tipo='pdf'}
   else if(type!=='image/gif'){b=await toJpeg(file,1600);type='image/jpeg'}
   const r=await C.assets.upload(b,{type});return {id:r.id,tipo,nome:file.name};
 }
 const upErr=e=>({unsupported_type:'Formato não aceito. Use fotos JPG/PNG ou vídeos MP4.',too_large:'Arquivo maior que 20 MB. Grave um vídeo mais curto ou envie em partes.',quota_or_state:'O espaço de arquivos acabou.',quota_exceeded:'O limite gratuito do banco de dados foi atingido hoje. Tente amanhã.',unavailable:'Sem conexão com a internet. Tente de novo quando estiver on-line.',rate_limited:'Muitos envios seguidos. Espere um pouco e tente de novo.',not_granted:'Você não tem permissão para enviar arquivos aqui.'}[e&&e.code]||'Não foi possível enviar o arquivo. Tente de novo.');
 function drawMedia(el,f){
   const box=el.querySelector(`[data-media="${f.k}"] .mlist`);if(!box)return;const arr=el._media[f.k];
-  box.innerHTML=arr.map((m,i)=>`<div class="mitem">${m.tipo==='video'?`<video src="${blob(m.id)}" muted preload="metadata"></video><span class="vtag">${ICON.play}</span>`:`<img src="${blob(m.id)}" alt="" data-zoom title="Clique para ampliar">`}<button type="button" class="mdel" data-mdel="${f.k}:${i}" aria-label="Remover">${ICON.x}</button></div>`).join('');
+  box.innerHTML=arr.map((m,i)=>`<div class="mitem">${m.tipo==='pdf'?`<a class="mpdf" href="${blob(m.id)}" target="_blank" rel="noopener"><b>PDF</b><span>${esc(m.nome||'documento')}</span></a>`:m.tipo==='video'?`<video src="${blob(m.id)}" muted preload="metadata"></video><span class="vtag">${ICON.play}</span>`:`<img src="${blob(m.id)}" alt="" data-zoom title="Clique para ampliar">`}<button type="button" class="mdel" data-mdel="${f.k}:${i}" aria-label="Remover">${ICON.x}</button></div>`).join('');
 }
 function galeriaManut(id){
   const r=get('manutencao',id);if(!r)return;const m=Array.isArray(r.midia)?r.midia:[];
@@ -1170,6 +1189,7 @@ function gallery(id){
 function fieldHtml(f,v,pre){
   if(f.t==='sec')return `<div class="full fsec">${esc(f.l)}</div>`;
   if(f.t==='calc')return `<div class="full" id="cmcalc"></div>`;
+  if(f.t==='html')return `<div class="full">${f.html()}</div>`;
   const id=(pre||'cmf-')+f.k,cls='field'+(f.full?' full':'');let input;const fw=f.show?` data-fw="${f.k}"`:'';
   if(f.t==='sel')input=`<select id="${id}" data-k="${f.k}"><option value="">—</option>${(typeof f.opt==='function'?f.opt():f.opt).map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o];return `<option value="${esc(ov)}" ${String(ov)===String(v??'')?'selected':''}>${esc(ol)}</option>`}).join('')}</select>`;
   else if(f.t==='ref'){const T=MODS[f.ref].title;let list=rows(f.ref).filter(f.filter||(()=>true)).sort((a,b)=>T(a).localeCompare(T(b)));
@@ -1179,14 +1199,14 @@ function fieldHtml(f,v,pre){
     input=`<select id="${id}" data-k="${f.k}"><option value="">${list.length?'Selecione…':'Nenhum cadastrado ainda'}</option>${body}</select>`}
   else if(f.t==='multi'){const sel=Array.isArray(v)?v:(v?[v]:[]);input=`<div class="mchips" id="${id}" role="group">${f.opt.map(o=>`<label class="mchk"><input type="checkbox" value="${esc(o)}" ${sel.includes(o)?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div>`}
   else if(f.t==='area')input=`<textarea id="${id}" data-k="${f.k}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>${esc(v||'')}</textarea>`;
-  else if(f.t==='photo'||f.t==='media')input=`<div class="media${f.t==='photo'?' mphoto':''}" data-media="${f.k}"><div class="mlist"></div>${C.assets?`<label class="btn upl">${ICON.cam} ${f.t==='photo'?'Escolher foto':'Adicionar fotos ou vídeos'}<input type="file" id="${id}" data-mfile="${f.k}" accept="${f.t==='photo'?'image/*':'image/*,video/mp4,video/webm'}" ${f.t==='media'?'multiple':''}></label>`:'<span class="meta">O envio de arquivos funciona no aplicativo publicado, para quem pode editar.</span>'}<span class="meta mstat"></span></div>`;
+  else if(f.t==='photo'||f.t==='media')input=`<div class="media${f.t==='photo'?' mphoto':''}" data-media="${f.k}"><div class="mlist"></div>${C.assets?`<label class="btn upl">${ICON.cam} ${f.t==='photo'?(f.pdf?'Anexar foto ou PDF':'Escolher foto'):'Adicionar fotos ou vídeos'}<input type="file" id="${id}" data-mfile="${f.k}" accept="${f.t==='photo'?(f.pdf?'image/*,application/pdf':'image/*'):'image/*,video/mp4,video/webm'}" ${f.t==='media'?'multiple':''}></label>`:'<span class="meta">O envio de arquivos funciona no aplicativo publicado, para quem pode editar.</span>'}<span class="meta mstat"></span></div>`;
   else{const type=f.t==='date'?'date':f.t==='month'?'month':'text';
     const val=v==null||v===''?'':f.t==='money'?num(v).toFixed(2).replace('.',','):f.t==='num'?String(v).replace('.',','):v;
     input=`<input id="${id}" data-k="${f.k}" type="${type}" ${f.mask?`data-mask="${f.mask}" inputmode="numeric" maxlength="18"`:''} ${f.t==='money'||f.t==='num'?'inputmode="decimal"':''} value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>`}
   return `<div class="${cls}"${fw}><label for="${id}"${f.strong?' class="lstrong"':''}>${esc(f.l)}${f.req?' *':''}</label>${input}${f.hint?`<span class="meta">${esc(f.hint)}</span>`:''}</div>`;
 }
 function readFields(el,fields,pre){const o={};fields.forEach(f=>{if(!f.k)return;
-  if(f.t==='photo'||f.t==='media'){const a=(el._media&&el._media[f.k])||[];if(f.t==='photo'){if(a[0])o[f.k]=a[0].id}else if(a.length)o[f.k]=a.slice();return}
+  if(f.t==='photo'||f.t==='media'){const a=(el._media&&el._media[f.k])||[];if(f.t==='photo'){if(a[0]){o[f.k]=a[0].id;if(f.pdf){o[f.k+'Tipo']=a[0].tipo;if(a[0].nome)o[f.k+'Nome']=a[0].nome}}}else if(a.length)o[f.k]=a.slice();return}
   if(f.t==='multi'){const box=el.querySelector('#'+(pre||'cmf-')+f.k);const a=box?[...box.querySelectorAll('input:checked')].map(x=>x.value):[];if(a.length)o[f.k]=a;return}
   const e=el.querySelector('#'+(pre||'cmf-')+f.k);if(!e)return;const raw=e.value.trim();if(raw==='')return;o[f.k]=(f.t==='money'||f.t==='num')?parseMoney(raw):raw});return o}
 function checkFields(o,fields){
@@ -1201,7 +1221,7 @@ function openForm(c,row,pre){
   <form id="cmform" novalidate><div class="fgrid">${M.fields.map(f=>fieldHtml(f,v[f.k])).join('')}</div><div class="meta" id="cmerr" style="color:var(--neg);margin-top:10px"></div></form>
   <div class="sheet-f">${editing?'<button class="btn danger" data-del style="margin-right:auto">Excluir</button>':''}<button class="btn" data-x>Cancelar</button>${c==='contratos'?'<button class="btn" data-okdoc>Salvar e gerar contrato</button>':''}<button class="btn primary" data-ok>${editing?'Salvar':'Cadastrar'}</button></div>`,(el,close)=>{
     const form=el.querySelector('#cmform');let busy=0;
-    el._media={};M.fields.filter(f=>f.t==='photo'||f.t==='media').forEach(f=>{const cur=v[f.k];el._media[f.k]=f.t==='photo'?(cur?[{id:cur,tipo:'image'}]:[]):(Array.isArray(cur)?cur.slice():[]);drawMedia(el,f)});
+    el._media={};M.fields.filter(f=>f.t==='photo'||f.t==='media').forEach(f=>{const cur=v[f.k];el._media[f.k]=f.t==='photo'?(cur?[{id:cur,tipo:v[f.k+'Tipo']||'image',nome:v[f.k+'Nome']}]:[]):(Array.isArray(cur)?cur.slice():[]);drawMedia(el,f)});
     const set=(k,val)=>{const f=M.fields.find(x=>x.k===k),e=el.querySelector('#cmf-'+k);if(!e||val==null)return;e.value=f&&f.t==='money'?num(val).toFixed(2).replace('.',','):val};
     const upd=()=>{const vals=readFields(el,M.fields);M.fields.forEach(f=>{if(!f.show)return;const w=el.querySelector(`[data-fw="${f.k}"]`);if(w)w.hidden=!f.show(vals)});const box=el.querySelector('#cmcalc');if(M.calc&&box)box.innerHTML=M.calc(vals)};
     form.addEventListener('change',async e=>{
