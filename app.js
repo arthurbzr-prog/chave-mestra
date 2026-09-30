@@ -844,7 +844,9 @@ _______________________________________
 FIADOR(A): {{fiador.nome}}
 {{/fiador}}
 TESTEMUNHAS:
+
 1. ______________________________  CPF: ________________
+
 2. ______________________________  CPF: ________________`;
 const MODELO_COM=`CONTRATO DE LOCAÇÃO DE IMÓVEL COMERCIAL Nº {{contrato.numero}}
 
@@ -934,7 +936,9 @@ _______________________________________
 FIADOR(A): {{fiador.nome}}
 {{/fiador}}
 TESTEMUNHAS:
+
 1. ______________________________  CPF: ________________
+
 2. ______________________________  CPF: ________________`;
 const MODELO_TEMP=`CONTRATO DE LOCAÇÃO POR TEMPORADA Nº {{contrato.numero}}
 
@@ -1003,7 +1007,9 @@ LOCATÁRIO(A): {{inquilino.nome}}
 CPF/CNPJ: {{inquilino.doc}}
 
 TESTEMUNHAS:
+
 1. ______________________________  CPF: ________________
+
 2. ______________________________  CPF: ________________`;
 const MODELOS_DEF=[{nome:'Residencial',texto:MODELO},{nome:'Comercial',texto:MODELO_COM},{nome:'Temporada',texto:MODELO_TEMP}];
 const mdl=i=>{const s=(C.config.modelos||[])[i]||{};return {nome:s.nome||MODELOS_DEF[i].nome,texto:s.texto||(i===0&&C.config.modelo)||MODELOS_DEF[i].texto}};
