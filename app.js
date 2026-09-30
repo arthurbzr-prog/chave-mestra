@@ -511,16 +511,12 @@ const M$=k=>r=>`<span class="num">${fmt(num(r[k]))}</span>`;
 function prazoBadge(d){if(d==null)return '';if(d<0)return bdg('atrasado há '+(-d)+' d','bad');if(d===0)return bdg('hoje','bad');if(d<=num(C.config.alertaDias||30))return bdg('em '+d+' d','warn');return ''}
 const PRIO={Urgente:0,Alta:1,'Média':2,Baixa:3};
 const maskDoc=v=>{const d=String(v||'').replace(/\D/g,'').slice(0,14);if(!d)return '';if(d.length<=11)return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'.$1-$2');return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/,(m,a,b,c,e,f)=>a+'.'+b+'.'+c+'/'+e+(f?'-'+f:''))};
-const CONS_L={serasa:['Serasa · consultar CPF de terceiros','https://www.serasa.com.br/voceconsulta/','Consulta paga no Serasa “Você Consulta”.'],
-  ant:['Antecedentes criminais · Polícia Federal','https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais','Grátis no gov.br, com os dados da pessoa.'],
-  cpf:['Situação do CPF · Receita Federal','https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp','Precisa do CPF e da data de nascimento.']};
-const consLink=k=>{const [t,u,d]=CONS_L[k];return `<div class="conshead"><a class="btn sm" href="${u}" target="_blank" rel="noopener">${ICON.doc} ${esc(t)}</a><span class="meta">${esc(d)}</span></div>`};
 const CONSULTAS_HTML=()=>`<div class="consbox"><b>Consultas rápidas</b> <span class="meta">(com autorização da pessoa)</span>
 <div class="conslinks"><a class="btn sm" href="https://www.serasa.com.br/voceconsulta/" target="_blank" rel="noopener">Serasa · consultar CPF de terceiros</a>
 <a class="btn sm" href="https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais" target="_blank" rel="noopener">Antecedentes criminais · Polícia Federal</a>
 <a class="btn sm" href="https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp" target="_blank" rel="noopener">Situação do CPF · Receita Federal</a></div>
 <div class="meta">Abra a consulta, veja o resultado e registre aqui embaixo (situação, data e um print ou PDF do comprovante).</div></div>`;
-const consBadges=r=>{const s=r.serasaStatus,a=r.antStatus,cp=r.cpfStatus,o=[];if(cp&&cp!=='Não consultado')o.push(bdg('CPF: '+cp,cp==='Regular'?'ok':'bad'));if(s&&s!=='Não consultado')o.push(bdg('Serasa: '+s,s==='Nome limpo'?'ok':'bad'));if(a&&a!=='Não consultado')o.push(bdg('Antecedentes: '+a,a==='Nada consta'?'ok':'bad'));return o.join(' ')};
+const consBadges=r=>{const s=r.serasaStatus,a=r.antStatus,o=[];if(s&&s!=='Não consultado')o.push(bdg('Serasa: '+s,s==='Nome limpo'?'ok':'bad'));if(a&&a!=='Não consultado')o.push(bdg('Antecedentes: '+a,a==='Nada consta'?'ok':'bad'));return o.join(' ')};
 const catsOf=r=>Array.isArray(r.categorias)&&r.categorias.length?r.categorias:(r.categoria?[r.categoria]:[]);
 const compOf=r=>(r.data||'').slice(0,7);
 const INTV={2:'bimestral',3:'trimestral',4:'quadrimestral',6:'semestral',12:'anual'};
@@ -599,19 +595,13 @@ pessoas:{nome:'Pessoas',sing:'pessoa',novo:'Nova pessoa',salvo:'Pessoa salva.',t
     {k:'rgOrgao',l:'Órgão emissor / UF',t:'text',ph:'SSP/RN',strong:1},{k:'rgExpedicao',l:'Data de expedição do RG',t:'date'},
     {t:'sec',l:'Contato e situação'},{k:'estadoCivil',l:'Estado civil',t:'sel',opt:OPT.estadoCivil},{k:'profissao',l:'Profissão',t:'text'},
     {k:'telefone',l:'Telefone',t:'text'},{k:'email',l:'E-mail',t:'text'},
-    ...ADDR,{t:'sec',l:'Consultas rápidas',id:'cons'},{t:'html',html:()=>`<div class="meta">Abra cada consulta, veja o resultado e registre aqui: situação, data e um print, foto ou PDF do comprovante.</div>`},
-    {k:'consentimento',l:'Autorizou as consultas?',t:'sel',opt:['Não informado','Sim','Não']},
-    {t:'html',html:()=>consLink('serasa')},
-    {k:'serasaStatus',l:'Serasa / SPC',t:'sel',opt:['Não consultado','Nome limpo','Com restrições']},{k:'serasaData',l:'Data da consulta Serasa',t:'date'},
-    {k:'serasaObs',l:'Resultado Serasa (score, pendências)',t:'text',full:1},
-    {k:'serasaArq',l:'Comprovante do Serasa (print, foto ou PDF)',t:'photo',pdf:1,full:1},
-    {t:'html',html:()=>consLink('ant')},
+    ...ADDR,{t:'sec',l:'Consultas: Serasa e antecedentes criminais'},{t:'html',html:()=>CONSULTAS_HTML()},
+    {k:'consentimento',l:'Autorizou as consultas?',t:'sel',opt:['Não informado','Sim','Não']},{k:'serasaStatus',l:'Serasa / SPC',t:'sel',opt:['Não consultado','Nome limpo','Com restrições']},
+    {k:'serasaData',l:'Data da consulta Serasa',t:'date'},{k:'serasaObs',l:'Resultado Serasa (score, pendências)',t:'text'},
+    {k:'serasaArq',l:'Comprovante Serasa (print, foto ou PDF)',t:'photo',pdf:1},
     {k:'antStatus',l:'Antecedentes criminais',t:'sel',opt:['Não consultado','Nada consta','Consta registro']},{k:'antData',l:'Data da certidão',t:'date'},
-    {k:'antOrgao',l:'Órgão da certidão',t:'text',ph:'Polícia Federal, TJ, SSP…',full:1},
-    {k:'antArq',l:'Certidão de antecedentes (print, foto ou PDF)',t:'photo',pdf:1,full:1},
-    {t:'html',html:()=>consLink('cpf')},
-    {k:'cpfStatus',l:'Situação do CPF',t:'sel',opt:['Não consultado','Regular','Pendente de regularização','Suspensa','Cancelada','Nula']},{k:'cpfData',l:'Data da consulta do CPF',t:'date'},
-    {k:'cpfArq',l:'Comprovante da situação do CPF (print, foto ou PDF)',t:'photo',pdf:1,full:1},
+    {k:'antOrgao',l:'Órgão da certidão',t:'text',ph:'Polícia Federal, TJ, SSP…'},
+    {k:'antArq',l:'Certidão de antecedentes (print, foto ou PDF)',t:'photo',pdf:1},
     {t:'sec',l:'Documento de identidade (fotos)'},{k:'docFrente',l:'Foto da identidade — FRENTE',t:'photo'},{k:'docVerso',l:'Foto da identidade — VERSO',t:'photo'},{t:'sec',l:'Outros'},{k:'banco',l:'Dados para repasse (banco / PIX)',t:'text',full:1},{k:'obs',l:'Observações',t:'area',full:1}],
   cols:[['Nome',r=>`<b>${esc(r.nome)}</b><div class="meta">${esc([r.profissao,r.estadoCivil].filter(Boolean).join(' · '))}</div>`],['Tipo',r=>B(r.tipo)],
     ['Documento',r=>`<b>${esc(maskDoc(r.doc)||'—')}</b>`+(r.rg?`<div class="meta"><b>RG ${esc(r.rg)}${r.rgOrgao?' · '+esc(r.rgOrgao):''}</b>${r.rgExpedicao?' · exp. '+fd(r.rgExpedicao):''}</div>`:'')+(consBadges(r)?`<div class="cats">${consBadges(r)}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
@@ -1070,9 +1060,9 @@ function renderNovaPessoa(){
     return `<li class="pcrow"><div style="min-width:0"><b>${esc(r.nome||'Sem nome')}</b><div class="meta">${esc([r.doc&&'CPF '+r.doc,r.telefone,r.profissao].filter(Boolean).join(' · ')||'—')}</div>
       <div class="meta">Recebido ${fd(r.recebidoEm)}${r.interesse&&get('imoveis',r.interesse)?' · interesse: '+esc(MODS.imoveis.title(get('imoveis',r.interesse))):''} · ${fotos===2?bdg('RG frente e verso','ok'):fotos===1?bdg('falta 1 foto do RG','warn'):bdg('sem fotos do RG','')}${dup?' '+bdg('CPF já está em Pessoas','warn'):''}${r.consentimento?' '+bdg('Autorizou consultas: '+r.consentimento,r.consentimento==='Sim'?'ok':''):''} ${consBadges(r)}</div></div>
       <div class="pcact"><div class="pcf"><label for="pcd-${esc(r.id)}">Carregar os dados em</label><select id="pcd-${esc(r.id)}" class="search" data-pcdest="${esc(r.id)}">${pcDestOpts(r)}</select></div><div class="pcf"><label for="pct-${esc(r.id)}">Classificação</label><select id="pct-${esc(r.id)}" class="search" style="width:auto" data-pctipo="${esc(r.id)}">${OPT.tipoPessoa.map(t=>`<option ${t===(r.tipo||'Inquilino')?'selected':''}>${t}</option>`).join('')}</select></div>
-      <button class="btn sm" data-col="precad" data-edit="${esc(r.id)}">${ICON.edit} Conferir / fotos</button><button class="btn sm" data-pccons="${esc(r.id)}">${ICON.doc} Consultas</button><button class="btn sm primary" data-pctrans="${esc(r.id)}">Transferir para Pessoas</button></div></li>`}).join('')}</ul>`:'<div class="empty">Nenhum pré-cadastro. Cole a resposta de uma pessoa acima e clique em “Salvar no pré-cadastro”.</div>'}
+      <button class="btn sm" data-col="precad" data-edit="${esc(r.id)}">${ICON.edit} Conferir / fotos</button><button class="btn sm primary" data-pctrans="${esc(r.id)}">Transferir para Pessoas</button></div></li>`}).join('')}</ul>`:'<div class="empty">Nenhum pré-cadastro. Cole a resposta de uma pessoa acima e clique em “Salvar no pré-cadastro”.</div>'}
   <div class="note">Confira os dados, anexe as fotos da identidade (frente e verso), registre as consultas (Serasa e antecedentes), escolha a classificação e transfira. A pessoa sai daqui e entra em Pessoas, pronta para o contrato.</div></div>
-  <div class="card"><div class="card-h"><h2><span class="stepn">4</span> Consultas de Serasa e antecedentes</h2></div><div style="padding:16px;display:grid;gap:12px">${CONSULTAS_HTML()}<div><b>Registrar o resultado e anexar o comprovante</b><div class="meta">Escolha a pessoa. Abre a parte “Consultas rápidas” do cadastro, com um espaço de foto/arquivo para cada consulta.</div></div>${pcs.length||rows('pessoas').length?`<ul class="plist" style="border:1px solid var(--line);border-radius:10px">${pcs.map(r=>`<li><div><b>${esc(r.nome||'Sem nome')}</b> <span class="badge warn">pré-cadastro</span><div class="cats">${consBadges(r)||'<span class="meta">nenhuma consulta registrada</span>'}</div></div><button class="btn sm primary" data-pccons="${esc(r.id)}">${ICON.cam} Registrar consultas</button></li>`).join('')}${rows('pessoas').filter(p=>p.tipo!=='Locador').sort(MODS.pessoas.sort).map(r=>`<li><div><b>${esc(r.nome||'Sem nome')}</b> <span class="badge">${esc(r.tipo||'')}</span><div class="cats">${consBadges(r)||'<span class="meta">nenhuma consulta registrada</span>'}</div></div><button class="btn sm" data-pscons="${esc(r.id)}">${ICON.cam} Registrar consultas</button></li>`).join('')}</ul>`:'<div class="meta">Nenhuma pessoa ainda.</div>'}</div></div>
+  <div class="card"><div class="card-h"><h2><span class="stepn">4</span> Consultas de Serasa e antecedentes</h2></div><div style="padding:16px">${CONSULTAS_HTML()}<div class="meta" style="margin-top:8px">O resultado de cada consulta é registrado no cadastro da pessoa (botão “Conferir / fotos” ou em Pessoas → editar), na parte “Consultas”.</div></div></div>
   </div>`;
 }
 function editarMsg(){
@@ -1197,7 +1187,7 @@ function gallery(id){
 
 /* ---------- forms ---------- */
 function fieldHtml(f,v,pre){
-  if(f.t==='sec')return `<div class="full fsec"${f.id?` id="sec-${f.id}"`:''}>${esc(f.l)}</div>`;
+  if(f.t==='sec')return `<div class="full fsec">${esc(f.l)}</div>`;
   if(f.t==='calc')return `<div class="full" id="cmcalc"></div>`;
   if(f.t==='html')return `<div class="full">${f.html()}</div>`;
   const id=(pre||'cmf-')+f.k,cls='field'+(f.full?' full':'');let input;const fw=f.show?` data-fw="${f.k}"`:'';
@@ -1225,8 +1215,7 @@ function checkFields(o,fields){
   const bad=fields.filter(f=>(f.t==='money'||f.t==='num')&&o[f.k]!=null&&!isFinite(o[f.k])).map(f=>f.l);if(bad.length)return 'Valor inválido em: '+bad.join(', ')+'. Use números como 1.250,00.';
   return '';
 }
-function openForm(c,row,pre,foco){
-  if(foco)setTimeout(()=>{const e=document.querySelector('.overlay #sec-'+foco);if(e)e.scrollIntoView({block:'start',behavior:'smooth'})},80);
+function openForm(c,row,pre){
   const M=MODS[c],editing=!!row;let v=row?{...row}:{...(M.defaults?M.defaults():{}),...(pre||{})};if(M.prep)v=M.prep(v);
   modal(`<div class="wide"></div><h3>${editing?'Editar '+M.sing:M.novo}</h3>
   <form id="cmform" novalidate><div class="fgrid">${M.fields.map(f=>fieldHtml(f,v[f.k])).join('')}</div><div class="meta" id="cmerr" style="color:var(--neg);margin-top:10px"></div></form>
@@ -1536,8 +1525,6 @@ $('#app-cm').addEventListener('click',async e=>{
   if(t.dataset.dpago){const [id,k]=t.dataset.dpago.split('|'),raw={...C.data.despesas[id]};if(!raw)return;const pg={...(raw.pagos||{})};if(pg[k])delete pg[k];else pg[k]=true;put('despesas',id,{...raw,pagos:pg});toast(pg[k]?'Marcada como paga.':'Marcada como a pagar.');return}
   if(t.dataset.rel){relClick(t);return}
   if(t.dataset.xlista){gerarRel('lista',t.dataset.xlista);return}
-  if(t.dataset.pccons){const r=get('precad',t.dataset.pccons);if(r)openForm('precad',r,null,'cons');return}
-  if(t.dataset.pscons){const r=get('pessoas',t.dataset.pscons);if(r)openForm('pessoas',r,null,'cons');return}
   if(t.dataset.verdocs){verDocs(t.dataset.verdocs);return}
   if(t.id==='npCopy'){const tx=$('#npMsg').value;navigator.clipboard.writeText(tx).then(()=>toast('Mensagem copiada. Cole no WhatsApp da pessoa.'),()=>{const a=$('#npMsg');a.focus();a.select();toast('Texto selecionado. Use Ctrl+C / Cmd+C.')});return}
   if(t.id==='npEdit'||t.id==='cfgMsgEdit'){editarMsg();return}
