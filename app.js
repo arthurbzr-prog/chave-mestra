@@ -503,7 +503,7 @@ function finStatus(r){if(r.status==='Pago')return 'Pago';return r.vencimento&&r.
 function proxReaj(c){if(c.status!=='Ativo'||!c.inicio)return null;return addMon(c.ultimoReajuste||c.inicio,12)}
 const IDX={'IGP-M':'igpm','IPCA':'ipca','INPC':'inpc'};
 const sugestao=c=>{const p=num(C.config[IDX[c.indice||'IGP-M']]);return {p,v:Math.round(num(c.aluguel)*(1+p/100)*100)/100}};
-const BCLS={Locador:'info',Inquilino:'ok','Disponível':'ok',Alugado:'info','Em manutenção':'warn',Ativo:'ok',Rescindido:'bad',Pago:'ok',Pendente:'warn',Atrasado:'bad','A pagar':'warn',Previsto:'',Aberto:'bad','Em andamento':'warn','Concluído':'ok','Média':'info',Alta:'warn',Urgente:'bad',Sim:'ok','Ótimo':'ok',Bom:'ok',Regular:'warn',Ruim:'bad','Entrega das chaves':'info','Recebimento das chaves':'warn'};
+const BCLS={Locador:'info',Inquilino:'ok','Locatário':'ok','Disponível':'ok',Alugado:'info','Em manutenção':'warn',Ativo:'ok',Rescindido:'bad',Pago:'ok',Pendente:'warn',Atrasado:'bad','A pagar':'warn',Previsto:'',Aberto:'bad','Em andamento':'warn','Concluído':'ok','Média':'info',Alta:'warn',Urgente:'bad',Sim:'ok','Ótimo':'ok',Bom:'ok',Regular:'warn',Ruim:'bad','Entrega das chaves':'info','Recebimento das chaves':'warn'};
 const B=t=>t?`<span class="badge ${BCLS[t]||''}">${esc(t)}</span>`:'—';
 const bdg=(t,c)=>`<span class="badge ${c}">${esc(t)}</span>`;
 const M$=k=>r=>`<span class="num">${fmt(num(r[k]))}</span>`;
@@ -547,7 +547,7 @@ const ICON={
 /* ---------- modules ---------- */
 const UF=['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 const OPT={
-  tipoPessoa:['Locador','Inquilino','Fiador'],
+  tipoPessoa:['Locador','Locatário','Inquilino','Fiador'],
   estadoCivil:['Solteiro(a)','Casado(a)','União estável','Divorciado(a)','Separado(a)','Viúvo(a)'],
   tipoImovel:['Casa','Apartamento','Sala comercial','Loja','Galpão','Terreno'],
   statusImovel:['Disponível','Alugado','Em manutenção'],
@@ -579,7 +579,7 @@ const NEED=[['nacionalidade','nacionalidade'],['estadoCivil','estado civil'],['p
 
 const MODS={
 pessoas:{nome:'Pessoas',sing:'pessoa',novo:'Nova pessoa',salvo:'Pessoa salva.',title:r=>r.nome||'Sem nome',
-  defaults:()=>({tipo:'Inquilino',nacionalidade:'brasileiro(a)'}),sort:(a,b)=>(a.nome||'').localeCompare(b.nome||''),
+  defaults:()=>({tipo:'Locador',nacionalidade:'brasileiro(a)'}),sort:(a,b)=>(a.nome||'').localeCompare(b.nome||''),
   prep:v=>{if(v.rg&&!v.rgOrgao){const m=String(v.rg).match(/^\s*([\dxX.\-]+)\s*[-–/,]?\s*([A-Za-zÀ-ú]{2,}.*)$/);if(m){v.rg=m[1];v.rgOrgao=m[2].trim()}}if(v.doc)v.doc=maskDoc(v.doc);return v},
   fields:[{k:'nome',l:'Nome completo',t:'text',req:1,full:1,strong:1},{k:'tipo',l:'Tipo',t:'sel',opt:OPT.tipoPessoa,req:1},{k:'nacionalidade',l:'Nacionalidade',t:'text'},
     {k:'dataNasc',l:'Data de nascimento',t:'date'},{k:'nomeMae',l:'Nome da mãe',t:'text'},
@@ -607,7 +607,7 @@ imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo
 contratos:{nome:'Contratos',sing:'contrato',novo:'Novo contrato',salvo:'Contrato salvo.',title:r=>'Nº '+(r.numero||'s/n')+' · '+nome('imoveis',r.imovel),
   defaults:()=>({status:'Ativo',prazo:30,diaVenc:10,indice:'IGP-M',garantia:'Fiador',finalidade:'residenciais',modelo:'0',inicio:TODAY}),
   sort:(a,b)=>(a.status==='Ativo'?0:1)-(b.status==='Ativo'?0:1)||String(a.numero||'').localeCompare(String(b.numero||'')),
-  fields:[{t:'sec',l:'Quem e o quê'},{k:'imovel',l:'Imóvel',t:'ref',ref:'imoveis',req:1},{k:'inquilino',l:'Inquilino',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Inquilino',req:1},
+  fields:[{t:'sec',l:'Quem e o quê'},{k:'imovel',l:'Imóvel',t:'ref',ref:'imoveis',req:1},{k:'inquilino',l:'Inquilino',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Inquilino'||p.tipo==='Locatário',req:1},
     {k:'locador',l:'Locador',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Locador',hint:'Vem do cadastro do imóvel.'},
     {k:'fiador',l:'Fiador',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Fiador'},
     {t:'calc'},
@@ -1331,7 +1331,7 @@ function chartSVG(o){
 }
 const W_DEF=['k_recebido','k_areceber','k_atraso','k_despesas','k_resultado','k_ocupacao','k_contratos','k_prev12','g_prev','g_real','p_reajustes','p_atraso','p_terminando','p_manut','g_lucro','p_estoque'];
 const WIDGETS=[
- {id:'k_pessoas',g:'Pessoas',l:'Total de pessoas (locadores, inquilinos, fiadores)',k:1,f:()=>{const p=rows('pessoas'),n=t=>p.filter(x=>x.tipo===t).length;return ['Pessoas',p.length,`${n('Locador')} locadores · ${n('Inquilino')} inquilinos · ${n('Fiador')} fiadores`]}},
+ {id:'k_pessoas',g:'Pessoas',l:'Total de pessoas (locadores, inquilinos, fiadores)',k:1,f:()=>{const p=rows('pessoas'),n=t=>p.filter(x=>x.tipo===t).length;return ['Pessoas',p.length,`${n('Locador')} locadores · ${n('Locatário')} locatários · ${n('Inquilino')} inquilinos · ${n('Fiador')} fiadores`]}},
  {id:'p_inquilinos',g:'Pessoas',l:'Lista de inquilinos com contato',f:()=>{const ids=new Set(rows('contratos').filter(c=>c.status==='Ativo').map(c=>c.inquilino));const l=rows('pessoas').filter(p=>ids.has(p.id)).sort(MODS.pessoas.sort);
    return ['Inquilinos ativos',l.length,LI(l,p=>`<li><div><b>${esc(p.nome)}</b><div class="meta">${esc(p.telefone||'')}${p.email?' · '+esc(p.email):''}</div></div><span class="meta">${esc(p.profissao||'')}</span></li>`,'Nenhum inquilino com contrato ativo.')]}},
  {id:'k_imoveis',g:'Imóveis',l:'Total de imóveis',k:1,f:()=>{const im=rows('imoveis');return ['Imóveis',im.length,`${im.filter(i=>i.status==='Alugado').length} alugados · ${im.filter(i=>i.status==='Disponível').length} disponíveis`]}},
