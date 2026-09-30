@@ -541,7 +541,8 @@ const ICON={
   home:'<svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h14V10"/></svg>',
   x:'<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   play:'<svg class="i" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>',
-  check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>'
+  check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
+  print:'<svg class="i" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/></svg>'
 };
 
 /* ---------- modules ---------- */
@@ -642,13 +643,18 @@ vistorias:{nome:'Vistorias',sing:'vistoria',novo:'Nova vistoria',salvo:'Vistoria
     {k:'responsavel',l:'Responsável',t:'text'},{k:'estado',l:'Estado geral',t:'sel',opt:OPT.estado},
     {k:'itens',l:'Itens vistoriados e observações',t:'area',full:1,ph:'Ex.: Sala — pintura boa; Cozinha — torneira pingando…'},
     {k:'midia',l:'Fotos e vídeos da vistoria',t:'media',full:1},
-    {k:'assLocador',l:'Assinada pelo locador',t:'sel',opt:OPT.simnao},{k:'assInquilino',l:'Assinada pelo inquilino',t:'sel',opt:OPT.simnao}],
+    {t:'sec',l:'Assinatura do locador'},{k:'assLocador',l:'Assinada pelo locador',t:'sel',opt:OPT.simnao},{k:'assLocadorNome',l:'Nome do locador (quem assinou)',t:'text'},
+    {k:'assLocadorFoto',l:'Foto do locador ou da assinatura',t:'photo',full:1},
+    {t:'sec',l:'Assinatura do inquilino'},{k:'assInquilino',l:'Assinada pelo inquilino',t:'sel',opt:OPT.simnao},{k:'assInquilinoNome',l:'Nome do inquilino (quem assinou)',t:'text'},
+    {k:'assInquilinoFoto',l:'Foto do inquilino ou da assinatura',t:'photo',full:1}],
   prep:v=>{if(v.tipo==='Entrada')v.tipo='Entrega das chaves';if(v.tipo==='Saída')v.tipo='Recebimento das chaves';return v},
-  onChange:(k,v,set)=>{if(k==='contrato'){const c=get('contratos',v.contrato);if(c&&c.imovel)set('imovel',c.imovel)}},
+  onChange:(k,v,set)=>{if(k==='contrato'){const c=get('contratos',v.contrato);if(c){if(c.imovel)set('imovel',c.imovel);if(!v.assLocadorNome&&c.locador)set('assLocadorNome',nome('pessoas',c.locador));if(!v.assInquilinoNome&&c.inquilino)set('assInquilinoNome',nome('pessoas',c.inquilino))}}
+    if(k==='imovel'&&!v.assLocadorNome){const i=get('imoveis',v.imovel);if(i&&i.locador)set('assLocadorNome',nome('pessoas',i.locador))}},
   calc:v=>imovelCard(get('imoveis',v.imovel),'Imóvel vistoriado'),
   cols:[['Data',r=>fd(r.data)],['Imóvel',r=>`<b>${esc(nome('imoveis',r.imovel))}</b><div class="meta">${esc(endereco(get('imoveis',r.imovel)))}</div>`],['Tipo',r=>B(MODS.vistorias.prep({...r}).tipo)],['Estado',r=>B(r.estado)],
     ['Arquivos',r=>{const m=Array.isArray(r.midia)?r.midia:[];return m.length?`<button class="btn sm" data-gal="${esc(r.id)}">${ICON.cam} ${m.length} ${m.length===1?'arquivo':'arquivos'}</button>`:'<span class="meta">—</span>'}],
-    ['Assinaturas',r=>`${r.assLocador==='Sim'?bdg('Locador','ok'):bdg('Locador pendente','')} ${r.assInquilino==='Sim'?bdg('Inquilino','ok'):bdg('Inquilino pendente','')}`]]},
+    ['Assinaturas',r=>`${r.assLocador==='Sim'?bdg('Locador','ok'):bdg('Locador pendente','')} ${r.assInquilino==='Sim'?bdg('Inquilino','ok'):bdg('Inquilino pendente','')}${r.assLocadorNome||r.assInquilinoNome?`<div class="meta">${esc([r.assLocadorNome,r.assInquilinoNome].filter(Boolean).join(' · '))}</div>`:''}`]],
+  acts:r=>`<button class="icon-btn" data-printv="${esc(r.id)}" title="Imprimir vistoria com fotos" aria-label="Imprimir vistoria">${ICON.print}</button>`},
 financeiro:{nome:'Recebimentos',sing:'recebimento',novo:'Novo recebimento',salvo:'Recebimento salvo.',title:r=>fm(r.competencia)+' · '+nome('pessoas',r.inquilino),
   defaults:()=>({competencia:C.finMes||CUR,status:'Pendente'}),
   sort:(a,b)=>(b.competencia||'').localeCompare(a.competencia||'')||(a.vencimento||'').localeCompare(b.vencimento||''),
@@ -1077,6 +1083,46 @@ async function transferirPc(id){
 function verDocs(id){const p=get('pessoas',id);if(!p)return;const fs=[['Frente',p.docFrente],['Verso',p.docVerso]].filter(x=>x[1]);
   modal(`<div class="wide"></div><h3>Identidade · ${esc(p.nome)}</h3><div class="body"><div class="gal">${fs.map(([l,i])=>`<figure style="margin:0"><a href="${blob(i)}" target="_blank" rel="noopener" data-zoomlink><img src="${blob(i)}" alt="${l}" data-zoom style="aspect-ratio:auto;object-fit:contain;background:var(--surface-2)"></a><figcaption class="meta" style="text-align:center;margin-top:4px">${l}</figcaption></figure>`).join('')}</div></div><div class="sheet-f"><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close})}
 
+/* ---------- imprimir vistoria ---------- */
+async function dataUrlDe(id){for(let i=0;i<50;i++){const s=blob(id);if(s&&!/#(m|sp)=/.test(s)){try{const b=await fetch(s).then(r=>{if(!r.ok)throw 0;return r.blob()});return await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res('');fr.readAsDataURL(b)})}catch(e){return ''}}await new Promise(r=>setTimeout(r,200))}return ''}
+function abrirJanelaImpressao(){if(!(window.MIDIA||window.__sb))return null;try{const w=window.open('','_blank');if(w){w.document.write('<!doctype html><meta charset="utf-8"><title>Preparando…</title><p style="font:16px system-ui;padding:30px">Preparando a vistoria para imprimir… (carregando as fotos)</p>')}return w}catch(e){return null}}
+async function imprimirVistoria(id,w){
+  const v0=get('vistorias',id);if(!v0){if(w)w.close();return}const v=MODS.vistorias.prep({...v0});
+  toast('Preparando a vistoria com as fotos…');
+  const im=get('imoveis',v.imovel)||{},ct=get('contratos',v.contrato);
+  const loc=v.assLocadorNome||(ct?nome('pessoas',ct.locador):im.locador?nome('pessoas',im.locador):'');
+  const inq=v.assInquilinoNome||(ct?nome('pessoas',ct.inquilino):'');
+  const midia=(Array.isArray(v.midia)?v.midia:[]),fotos=midia.filter(m=>m.tipo!=='video'),nVid=midia.length-fotos.length;
+  const [fImovel,fLoc,fInq,...fs]=await Promise.all([im.foto?dataUrlDe(im.foto):'',v.assLocadorFoto?dataUrlDe(v.assLocadorFoto):'',v.assInquilinoFoto?dataUrlDe(v.assInquilinoFoto):'',...fotos.map(f=>dataUrlDe(f.id))]);
+  const e=esc,linha=(l,x)=>x?`<tr><th>${e(l)}</th><td>${e(x)}</td></tr>`:'';
+  const assin=(tit,nm,ok,foto)=>`<div class="ass"><div class="asstit">${e(tit)}</div>${foto?`<img src="${foto}" alt="">`:'<div class="assph"></div>'}<div class="assl"></div><div class="assn">${e(nm||'Nome: ______________________________')}</div><div class="asss">${ok==='Sim'?'✔ Assinada':'Assinatura pendente'}</div></div>`;
+  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Vistoria ${e(v.tipo||'')} - ${e(MODS.imoveis.title(im)||'')} - ${fd(v.data)}</title>
+<style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font:11pt/1.45 Georgia,"Times New Roman",serif;color:#111;margin:0;padding:16px}
+h1{font:700 17pt system-ui,sans-serif;margin:0;color:#1F5F6B}.sub{font:10pt system-ui,sans-serif;color:#555;margin:2px 0 14px}
+h2{font:700 11.5pt system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#1F5F6B;border-bottom:1.5px solid #1F5F6B;padding-bottom:3px;margin:18px 0 8px}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;vertical-align:top;padding:4px 6px;border-bottom:1px solid #ddd}th{width:30%;font:600 10pt system-ui,sans-serif;color:#444}
+.top{display:flex;gap:14px;align-items:flex-start}.top img{width:190px;height:140px;object-fit:cover;border-radius:6px;border:1px solid #ccc}
+.itens{white-space:pre-wrap;border:1px solid #ddd;border-radius:6px;padding:10px;min-height:60px}
+.fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.foto{break-inside:avoid;border:1px solid #ddd;border-radius:6px;padding:6px}.foto img{width:100%;height:230px;object-fit:contain;background:#f3f3f3;display:block}.foto div{font:9pt system-ui,sans-serif;color:#555;margin-top:4px}
+.asss-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;break-inside:avoid;margin-top:8px}.ass{text-align:center}.ass img{max-width:100%;height:120px;object-fit:contain;display:block;margin:0 auto 6px}.assph{height:70px}
+.asstit{font:700 10pt system-ui,sans-serif;text-transform:uppercase;color:#444;margin-bottom:8px}.assl{border-top:1px solid #111;margin:0 10px}.assn{margin-top:4px;font-weight:700}.asss{font:9pt system-ui,sans-serif;color:#555}
+.rod{margin-top:22px;font:9pt system-ui,sans-serif;color:#777;text-align:center}.bt{position:fixed;top:10px;right:10px;font:600 13px system-ui;padding:8px 14px;border:0;border-radius:8px;background:#1F5F6B;color:#fff;cursor:pointer}@media print{.bt{display:none}}</style></head><body>
+<button class="bt" onclick="print()">Imprimir</button>
+<h1>Laudo de Vistoria — ${e(v.tipo||'')}</h1><div class="sub">${e(C.config.empresa||'Chave Mestra')} · Vistoria realizada em ${fd(v.data)}</div>
+<h2>Imóvel</h2><div class="top">${fImovel?`<img src="${fImovel}" alt="">`:''}<table>${linha('Imóvel',[im.codigo,im.tipo].filter(Boolean).join(' · '))}${linha('Endereço',endereco(im))}${linha('Descrição',im.descricao)}${linha('Área / cômodos',[im.area?im.area+' m²':'',im.quartos?im.quartos+' quarto(s)':'',im.banheiros?im.banheiros+' banheiro(s)':'',im.vagas?im.vagas+' vaga(s)':''].filter(Boolean).join(' · '))}</table></div>
+<h2>Dados da vistoria</h2><table>${linha('Tipo',v.tipo)}${linha('Data',fd(v.data))}${linha('Responsável',v.responsavel)}${linha('Estado geral',v.estado)}${ct?linha('Contrato','Nº '+(ct.numero||'s/n')):''}${linha('Locador',loc)}${linha('Inquilino',inq)}</table>
+<h2>Itens vistoriados e observações</h2><div class="itens">${e(v.itens||'Sem observações.')}</div>
+<h2>Fotos (${fotos.length})${nVid?` · ${nVid} vídeo(s) disponível(is) no aplicativo`:''}</h2>${fotos.length?`<div class="fotos">${fs.map((s,i)=>`<div class="foto">${s?`<img src="${s}" alt="">`:'<div style="height:230px;display:grid;place-items:center;background:#f3f3f3">Foto indisponível</div>'}<div>Foto ${i+1}${fotos[i].nome?' · '+e(fotos[i].nome):''}</div></div>`).join('')}</div>`:'<p>Nenhuma foto anexada.</p>'}
+<h2>Assinaturas</h2><p style="font-size:10pt">As partes declaram estar de acordo com as condições do imóvel descritas neste laudo.</p>
+<div class="asss-wrap">${assin('Locador',loc,v.assLocador,fLoc)}${assin('Inquilino',inq,v.assInquilino,fInq)}</div>
+<div class="rod">Documento gerado pelo Chave Mestra em ${fd(TODAY)}</div>
+<script>window.addEventListener('load',()=>setTimeout(()=>print(),400))<\/script></body></html>`;
+  const nomeArq=('Vistoria '+(v.tipo||'')+' - '+(MODS.imoveis.title(im)||'imovel')+' - '+fd(v.data).replace(/\//g,'-')).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[\\/:*?"<>|]/g,'-');
+  if(w&&!w.closed){w.document.open();w.document.write(html);w.document.close();return}
+  if(window.MIDIA||window.__sb){try{const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.srcdoc=html.replace(/<script>[\s\S]*?<\/script>/,'');f.onload=()=>{setTimeout(()=>{try{f.contentWindow.print()}catch(x){}setTimeout(()=>f.remove(),60000)},500)};return}catch(x){}}
+  if(C.downloads){try{await C.downloads.save({filename:nomeArq+'.html',data:html});toast('Vistoria salva. Abra o arquivo no navegador e imprima (ou salve em PDF).')}catch(x){if(x&&x.code!=='declined')toast('Não foi possível gerar a vistoria aqui.')}}
+}
+
 /* ---------- ampliar fotos ---------- */
 function lightbox(src){
   const o=document.createElement('div');o.className='lbx';o.setAttribute('role','dialog');o.setAttribute('aria-label','Foto ampliada');let rot=0,z=false;
@@ -1109,7 +1155,7 @@ function gallery(id){
   const v=get('vistorias',id);if(!v)return;const m=Array.isArray(v.midia)?v.midia:[];
   modal(`<div class="wide"></div><h3>${esc(MODS.vistorias.title(MODS.vistorias.prep({...v})))}</h3><p>${esc(nome('imoveis',v.imovel))} · ${esc(endereco(get('imoveis',v.imovel)))}</p>
   <div class="body"><div class="gal">${m.map(x=>x.tipo==='video'?`<video src="${blob(x.id)}" controls preload="metadata"></video>`:`<a href="${blob(x.id)}" target="_blank" rel="noopener" data-zoomlink><img data-zoom src="${blob(x.id)}" alt="${esc(x.nome||'')}"></a>`).join('')}</div>
-  ${v.itens?`<div class="meta" style="white-space:pre-wrap;margin-top:10px">${esc(v.itens)}</div>`:''}</div><div class="sheet-f"><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close});
+  ${v.itens?`<div class="meta" style="white-space:pre-wrap;margin-top:10px">${esc(v.itens)}</div>`:''}</div><div class="sheet-f"><button class="btn" data-pv>${ICON.print} Imprimir vistoria</button><button class="btn" data-x>Fechar</button></div>`,(el,close)=>{el.querySelector('[data-x]').onclick=close;el.querySelector('[data-pv]').onclick=()=>{const w=abrirJanelaImpressao();imprimirVistoria(id,w)}});
 }
 
 /* ---------- forms ---------- */
@@ -1462,6 +1508,7 @@ $('#app-cm').addEventListener('click',async e=>{
   if(t.dataset.pctrans){transferirPc(t.dataset.pctrans);return}
   if(t.dataset.reaj){reajuste(t.dataset.reaj);return}
   if(t.dataset.docc){gerarDoc(t.dataset.docc);return}
+  if(t.dataset.printv){const w=abrirJanelaImpressao();imprimirVistoria(t.dataset.printv,w);return}
   if(t.dataset.gal){gallery(t.dataset.gal);return}
   if(t.dataset.pagar){pagar(t.dataset.pagar);return}
   if(t.hasAttribute('data-gerar')){gerar();return}
