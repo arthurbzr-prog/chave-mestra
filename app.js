@@ -827,22 +827,36 @@ Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) t
 
 CLÁUSULA 15ª – DO FORO
 Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
+
 E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-LOCADOR(A): {{locador.nome}}
+{{locador.nome}}
+LOCADOR(A)
 
 _______________________________________
-LOCATÁRIO(A): {{inquilino.nome}}
+{{inquilino.nome}}
+LOCATÁRIO(A)
 {{#fiador}}
+
 _______________________________________
-FIADOR(A): {{fiador.nome}}
+{{fiador.nome}}
+FIADOR(A)
 {{/fiador}}
+
 TESTEMUNHAS:
-1. ______________________________  CPF: ________________
-2. ______________________________  CPF: ________________`;
+
+_______________________________________
+TESTEMUNHA 1
+Nome: ______________________________
+CPF: ____________________
+
+_______________________________________
+TESTEMUNHA 2
+Nome: ______________________________
+CPF: ____________________`;
 const MODELO_COM=`CONTRATO DE LOCAÇÃO DE IMÓVEL COMERCIAL Nº {{contrato.numero}}
 
 LOCADOR(A): {{locador.nome}}, {{locador.nacionalidade}}, {{locador.estadoCivil}}, {{locador.profissao}}, portador(a) do RG nº {{locador.rg}}, inscrito(a) no CPF/CNPJ sob o nº {{locador.doc}}, com endereço em {{locador.endereco}}.
@@ -914,22 +928,36 @@ Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) t
 
 CLÁUSULA 17ª – DO FORO
 Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
+
 E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-LOCADOR(A): {{locador.nome}}
+{{locador.nome}}
+LOCADOR(A)
 
 _______________________________________
-LOCATÁRIO(A): {{inquilino.nome}}
+{{inquilino.nome}}
+LOCATÁRIO(A)
 {{#fiador}}
+
 _______________________________________
-FIADOR(A): {{fiador.nome}}
+{{fiador.nome}}
+FIADOR(A)
 {{/fiador}}
+
 TESTEMUNHAS:
-1. ______________________________  CPF: ________________
-2. ______________________________  CPF: ________________`;
+
+_______________________________________
+TESTEMUNHA 1
+Nome: ______________________________
+CPF: ____________________
+
+_______________________________________
+TESTEMUNHA 2
+Nome: ______________________________
+CPF: ____________________`;
 const MODELO_TEMP=`CONTRATO DE LOCAÇÃO POR TEMPORADA Nº {{contrato.numero}}
 
 LOCADOR(A): {{locador.nome}}, {{locador.nacionalidade}}, {{locador.estadoCivil}}, {{locador.profissao}}, portador(a) do RG nº {{locador.rg}}, inscrito(a) no CPF/CNPJ sob o nº {{locador.doc}}, residente e domiciliado(a) em {{locador.endereco}}.
@@ -983,19 +1011,30 @@ Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) t
 
 CLÁUSULA 12ª – DO FORO
 Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
+
 E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-LOCADOR(A): {{locador.nome}}
+{{locador.nome}}
+LOCADOR(A)
 
 _______________________________________
-LOCATÁRIO(A): {{inquilino.nome}}
+{{inquilino.nome}}
+LOCATÁRIO(A)
 
 TESTEMUNHAS:
-1. ______________________________  CPF: ________________
-2. ______________________________  CPF: ________________`;
+
+_______________________________________
+TESTEMUNHA 1
+Nome: ______________________________
+CPF: ____________________
+
+_______________________________________
+TESTEMUNHA 2
+Nome: ______________________________
+CPF: ____________________`;
 const MODELOS_DEF=[{nome:'Residencial',texto:MODELO},{nome:'Comercial',texto:MODELO_COM},{nome:'Temporada',texto:MODELO_TEMP}];
 const mdl=i=>{const s=(C.config.modelos||[])[i]||{};return {nome:s.nome||MODELOS_DEF[i].nome,texto:s.texto||(i===0&&C.config.modelo)||MODELOS_DEF[i].texto}};
 const mdlOf=c=>{const m=parseInt(c.modelo,10);return m>=0&&m<3?m:(c.finalidade==='comerciais'?1:0)};
@@ -1031,8 +1070,13 @@ function fillDoc(tpl,cx){
   const miss=new Set();
   const val=p=>{const v=p.split('.').reduce((o,k)=>o==null?o:o[k],cx);return v==null||v===''?null:String(v)};
   const text=tpl.replace(/\{\{([\w.]+)\}\}/g,(m,p)=>{const v=val(p);if(v==null){miss.add(LBL[p]||p);return '['+(LBL[p]||p)+']'}return v});
+  const fillH=s=>esc(s).replace(/\{\{([\w.]+)\}\}/g,(m,p)=>{const v=val(p);return v==null?`<mark>[${esc(LBL[p]||p)}]</mark>`:`<span class="fill">${esc(v)}</span>`});
+  const sigHtml=t=>{const out=[];let b=null;const fecha=()=>{if(!b)return;let [n,...r]=b;const mm=n&&n.match(/^([A-ZÀ-Ú() ]{4,})\s*:\s*(.+)$/);if(mm){n=mm[2];r=[mm[1],...r]}
+      out.push(`<div class="sigb"><div class="sigl"></div>${n!=null?`<div class="sign">${fillH(n)}</div>`:''}${r.map(x=>`<div class="sigr">${fillH(x)}</div>`).join('')}</div>`);b=null};
+    t.split('\n').forEach(l=>{l=l.trim();if(/^_{5,}$/.test(l)){fecha();b=[];return}if(b)b.push(l);else if(l)out.push(`<p>${fillH(l)}</p>`)});fecha();return out.join('')};
   const html=tpl.split(/\n{2,}/).map(par=>{const t=par.trim();if(!t)return '';
-    const inner=esc(t).replace(/\{\{([\w.]+)\}\}/g,(m,p)=>{const v=val(p);return v==null?`<mark>[${esc(LBL[p]||p)}]</mark>`:`<span class="fill">${esc(v)}</span>`}).replace(/\n/g,'<br>');
+    if(/^_{5,}\s*$/m.test(t)&&t.split('\n').some(l=>/^_{5,}$/.test(l.trim())))return sigHtml(t);
+    const inner=fillH(t).replace(/\n/g,'<br>');
     const cls=/^CONTRATO DE/.test(t)?'h':/^CLÁUSULA/.test(t)?'cl':/^_{5,}/.test(t)?'sig':'';
     return `<p${cls?` class="${cls}"`:''}>${inner}</p>`}).join('');
   return {text,html,miss:[...miss]};
@@ -1042,13 +1086,18 @@ function gerarDoc(id,mi){
   const fname=`Contrato ${c.numero||''} - ${nome('pessoas',c.inquilino)}`.replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,' ').trim();
   modal(`<div class="wide"></div><h3>Contrato preenchido</h3><div class="subtabs" style="margin:10px 18px 0" role="tablist" aria-label="Modelo">${[0,1,2].map(i=>`<button role="tab" data-mdl="${i}" aria-selected="${i===mi}">Modelo ${i+1} · ${esc(mdl(i).nome)}</button>`).join('')}</div>
   ${miss.length?`<p class="warnbox">Faltam ${miss.length} dado(s), marcados em amarelo: ${esc(miss.join(', '))}. Complete em Pessoas, Imóveis ou no próprio contrato e gere de novo.</p>`:'<p>Todos os campos foram preenchidos com os cadastros.</p>'}
-  <div class="body"><div class="doc" id="docv">${html}</div></div>
-  <div class="sheet-f"><button class="btn" data-x>Fechar</button><button class="btn" data-copy>Copiar texto</button>${C.downloads?'<button class="btn primary" data-dl>Baixar contrato (.html)</button>':''}</div>`,(el,close)=>{
+  <style>.doc .sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid} .doc .sigl{border-top:1px solid #111;margin-bottom:.35em} .doc .sign{font-weight:bold} .doc .sigr{font-size:.92em}</style><div class="body"><div class="doc" id="docv">${html}</div></div>
+  <div class="sheet-f"><button class="btn" data-x>Fechar</button><button class="btn" data-copy>Copiar texto</button>${C.downloads?'<button class="btn" data-dl>Baixar contrato (.html)</button>':''}<button class="btn primary" data-prt>${ICON.print} Imprimir contrato</button></div>`,(el,close)=>{
     el.querySelector('[data-x]').onclick=close;
     el.querySelectorAll('[data-mdl]').forEach(b=>b.onclick=()=>{close();gerarDoc(id,+b.dataset.mdl)});
     el.querySelector('[data-copy]').onclick=async()=>{try{await navigator.clipboard.writeText(text);toast('Texto copiado. Cole no Word ou no Google Docs.')}catch(e){const r=document.createRange();r.selectNodeContents(el.querySelector('#docv'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Texto selecionado. Use Ctrl+C / Cmd+C para copiar.')}};
-    const dl=el.querySelector('[data-dl]');if(dl)dl.onclick=async()=>{
-      const page=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(fname)}</title><style>body{font-family:Georgia,'Times New Roman',serif;font-size:12pt;line-height:1.6;max-width:17cm;margin:2cm auto;color:#111}p{margin:0 0 .9em;text-align:justify}p.h{text-align:center;font-weight:bold;font-size:13pt;margin-bottom:1.4em}p.cl{margin-top:1.2em}p.cl:first-line{font-weight:bold}p.sig{margin-top:2.2em;text-align:left}mark{background:#ffe58a}</style></head><body>${html.replace(/<span class="fill">(.*?)<\/span>/g,'$1')}</body></html>`;
+    const dl=el.querySelector('[data-dl]');const prt=el.querySelector('[data-prt]');
+    if(prt)prt.onclick=async()=>{if(window.MIDIA||window.__sb){try{const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.srcdoc=pagina();f.onload=()=>setTimeout(()=>{try{f.contentWindow.print()}catch(x){}setTimeout(()=>f.remove(),60000)},300);return}catch(x){}}
+      if(C.downloads){try{await C.downloads.save({filename:fname+'.html',data:pagina()});toast('Contrato salvo. Abra o arquivo no navegador e imprima (ou salve em PDF).')}catch(e){if(e&&e.code!=='declined')toast('Não foi possível imprimir aqui. Use “Copiar texto”.')}}else{try{const w=window.open('','_blank');w.document.write(pagina());w.document.close();setTimeout(()=>w.print(),400)}catch(e){toast('Não foi possível imprimir aqui. Use “Copiar texto”.')}}};
+    const pagina=()=>{
+      const page=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(fname)}</title><style>body{font-family:Georgia,'Times New Roman',serif;font-size:12pt;line-height:1.6;max-width:17cm;margin:2cm auto;color:#111}p{margin:0 0 .9em;text-align:justify}p.h{text-align:center;font-weight:bold;font-size:13pt;margin-bottom:1.4em}p.cl{margin-top:1.2em}p.cl:first-line{font-weight:bold}p.sig{margin-top:2.2em;text-align:left}mark{background:#ffe58a}.sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid}.sigl{border-top:1px solid #111;margin-bottom:.35em}.sign{font-weight:bold}.sigr{font-size:.92em}@page{margin:2cm}@media print{body{margin:0 auto}}</style></head><body>${html.replace(/<span class="fill">(.*?)<\/span>/g,'$1')}</body></html>`;
+      return page};
+    if(dl)dl.onclick=async()=>{const page=pagina();
       try{await C.downloads.save({filename:fname+'.html',data:page});toast('Contrato salvo. Abra no Word ou no navegador para imprimir.')}catch(e){if(e&&e.code!=='declined')toast('Não foi possível baixar aqui. Use “Copiar texto”.')}};
   });
 }
