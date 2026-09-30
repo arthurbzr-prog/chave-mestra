@@ -500,7 +500,8 @@ const nome=(c,id)=>{const r=get(c,id);return r?MODS[c].title(r):'—'};
 function endereco(r){if(!r)return '';if(!r.logradouro)return r.endereco||'';
   return [[r.logradouro,r.numero].filter(Boolean).join(', ')+(r.complemento?' – '+r.complemento:''),r.bairro,[r.cidade,r.uf].filter(Boolean).join('/'),r.cep?'CEP '+r.cep:''].filter(Boolean).join(', ')}
 function finStatus(r){if(r.status==='Pago')return 'Pago';return r.vencimento&&r.vencimento<TODAY?'Atrasado':'Pendente'}
-function proxReaj(c){if(c.status!=='Ativo'||!c.inicio)return null;return addMon(c.ultimoReajuste||c.inicio,12)}
+const perReaj=c=>{const n=parseInt(c&&c.periodoReajuste,10);return isNaN(n)?12:n};
+function proxReaj(c){if(c.status!=='Ativo'||!c.inicio)return null;const n=perReaj(c);if(!n)return null;return addMon(c.ultimoReajuste||c.inicio,n)}
 const IDX={'IGP-M':'igpm','IPCA':'ipca','INPC':'inpc'};
 const sugestao=c=>{const p=num(C.config[IDX[c.indice||'IGP-M']]);return {p,v:Math.round(num(c.aluguel)*(1+p/100)*100)/100}};
 const BCLS={Locador:'info',Inquilino:'ok','Locatário':'ok','Disponível':'ok',Alugado:'info','Em manutenção':'warn',Ativo:'ok',Rescindido:'bad',Pago:'ok',Pendente:'warn',Atrasado:'bad','A pagar':'warn',Previsto:'',Aberto:'bad','Em andamento':'warn','Concluído':'ok','Média':'info',Alta:'warn',Urgente:'bad',Sim:'ok','Ótimo':'ok',Bom:'ok',Regular:'warn',Ruim:'bad','Entrega das chaves':'info','Recebimento das chaves':'warn'};
@@ -606,7 +607,7 @@ imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo
   cols:[['Imóvel',r=>`<div class="withthumb">${thumb(r.foto)}<div><b>${esc(r.codigo||'')}</b> ${esc(r.tipo||'')}<div class="meta">${esc(endereco(r))}</div></div></div>`],
     ['Descrição',r=>`<span class="meta clamp">${esc(r.descricao||'—')}</span>`],['Locador',r=>esc(nome('pessoas',r.locador))],['Aluguel',M$('aluguel'),1],['Situação',r=>B(r.status)]]},
 contratos:{nome:'Contratos',sing:'contrato',novo:'Novo contrato',salvo:'Contrato salvo.',title:r=>'Nº '+(r.numero||'s/n')+' · '+nome('imoveis',r.imovel),
-  defaults:()=>({status:'Ativo',prazo:30,diaVenc:10,indice:'IGP-M',garantia:'Fiador',finalidade:'residenciais',modelo:'0',inicio:TODAY}),
+  defaults:()=>({status:'Ativo',prazo:30,diaVenc:10,indice:'IGP-M',periodoReajuste:'12',garantia:'Fiador',finalidade:'residenciais',modelo:'0',inicio:TODAY}),
   sort:(a,b)=>(a.status==='Ativo'?0:1)-(b.status==='Ativo'?0:1)||String(a.numero||'').localeCompare(String(b.numero||'')),
   fields:[{t:'sec',l:'Quem e o quê'},{k:'imovel',l:'Imóvel',t:'ref',ref:'imoveis',req:1},{k:'inquilino',l:'Inquilino',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Inquilino'||p.tipo==='Locatário',req:1},
     {k:'locador',l:'Locador',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Locador',hint:'Vem do cadastro do imóvel.'},
@@ -615,7 +616,7 @@ contratos:{nome:'Contratos',sing:'contrato',novo:'Novo contrato',salvo:'Contrato
     {t:'sec',l:'Condições'},{k:'numero',l:'Número do contrato',t:'text'},{k:'status',l:'Situação',t:'sel',opt:OPT.statusContrato},
     {k:'inicio',l:'Início',t:'date',req:1},{k:'prazo',l:'Prazo (meses)',t:'num'},
     {k:'fim',l:'Término',t:'date',hint:'Calculado pelo início e prazo.'},{k:'diaVenc',l:'Dia do vencimento',t:'num'},
-    {k:'aluguel',l:'Aluguel (R$)',t:'money',req:1,hint:'Vem do valor do imóvel.'},{k:'indice',l:'Índice de reajuste',t:'sel',opt:OPT.indice},
+    {k:'aluguel',l:'Aluguel (R$)',t:'money',req:1,hint:'Vem do valor do imóvel.'},{k:'indice',l:'Índice de reajuste',t:'sel',opt:OPT.indice},{k:'periodoReajuste',l:'Período do reajuste',t:'sel',opt:[['12','A cada 12 meses (anual)'],['6','A cada 6 meses'],['24','A cada 24 meses'],['30','A cada 30 meses'],['36','A cada 36 meses'],['0','Sem reajuste']],hint:'O próximo reajuste é contado a partir do início ou do último reajuste.'},
     {k:'garantia',l:'Garantia',t:'sel',opt:OPT.garantia},{k:'caucao',l:'Valor da caução (R$)',t:'money'},
     {k:'modelo',l:'Modelo de contrato',t:'sel',opt:()=>[0,1,2].map(i=>[String(i),'Modelo '+(i+1)+' · '+mdl(i).nome]),hint:'Escolha qual texto usar ao gerar o contrato.'},{k:'finalidade',l:'Finalidade',t:'sel',opt:OPT.finalidade},{k:'atividade',l:'Ramo de atividade (comercial)',t:'text',ph:'Ex.: loja de roupas'},{k:'ultimoReajuste',l:'Último reajuste',t:'date',hint:'Vazio = nunca reajustado.'},
     {k:'obs',l:'Observações e histórico de reajustes',t:'area',full:1}],
@@ -626,7 +627,7 @@ contratos:{nome:'Contratos',sing:'contrato',novo:'Novo contrato',salvo:'Contrato
     if(k==='modelo'&&(v.modelo==='0'||v.modelo==='1'))set('finalidade',v.modelo==='1'?'comerciais':'residenciais');
   },
   calc:v=>`<div class="pcards">${imovelCard(get('imoveis',v.imovel))}${pessoaCard('Inquilino',get('pessoas',v.inquilino),NEED)}${pessoaCard('Locador',get('pessoas',v.locador),NEED)}${v.fiador?pessoaCard('Fiador',get('pessoas',v.fiador),NEED):''}</div><div class="meta">Esses dados vêm dos cadastros de Pessoas e Imóveis e entram no contrato. Para corrigir, edite o cadastro.</div>`,
-  prep:v=>{if(v.modelo==null||v.modelo==='')v.modelo=String(mdlOf(v));return v},
+  prep:v=>{if(v.modelo==null||v.modelo==='')v.modelo=String(mdlOf(v));if(v.periodoReajuste==null||v.periodoReajuste==='')v.periodoReajuste='12';return v},
   beforeSave:o=>{if(!o.fim&&o.inicio&&num(o.prazo)>0)o.fim=addDays(addMon(o.inicio,num(o.prazo)),-1);if(!o.locador){const i=get('imoveis',o.imovel);if(i&&i.locador)o.locador=i.locador}return o},
   afterSave:async o=>{const i=get('imoveis',o.imovel);if(i&&o.status==='Ativo'&&i.status!=='Alugado'){const {id,...raw}=i;await put('imoveis',id,{...raw,status:'Alugado'})}},
   cols:[['Contrato',r=>`<b>Nº ${esc(r.numero||'s/n')}</b><div class="meta">${esc(nome('imoveis',r.imovel))}</div>`],
@@ -769,7 +770,7 @@ O aluguel mensal é de {{contrato.aluguel}} ({{contrato.aluguelExtenso}}), a ser
 Parágrafo único. O atraso no pagamento implicará multa de {{config.multa}} sobre o valor devido, acrescida de juros de mora de {{config.jurosMes}} ao mês e correção monetária.
 
 CLÁUSULA 4ª – DO REAJUSTE
-O aluguel será reajustado a cada período de 12 (doze) meses, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
+O aluguel será reajustado a cada período de {{contrato.periodoReajusteExtenso}}, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
 
 CLÁUSULA 5ª – DOS ENCARGOS
 Além do aluguel, caberá ao(à) LOCATÁRIO(A) o pagamento das despesas de consumo de água, energia elétrica e gás, das taxas ordinárias de condomínio e do IPTU incidente sobre o imóvel durante a locação, salvo acordo diverso por escrito.
@@ -835,7 +836,7 @@ O aluguel mensal é de {{contrato.aluguel}} ({{contrato.aluguelExtenso}}), a ser
 Parágrafo único. O atraso no pagamento implicará multa de {{config.multa}} sobre o valor devido, acrescida de juros de mora de {{config.jurosMes}} ao mês e correção monetária.
 
 CLÁUSULA 5ª – DO REAJUSTE
-O aluguel será reajustado a cada período de 12 (doze) meses, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
+O aluguel será reajustado a cada período de {{contrato.periodoReajusteExtenso}}, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
 
 CLÁUSULA 6ª – DOS ENCARGOS E TRIBUTOS
 Correrão por conta do(a) LOCATÁRIO(A), durante toda a locação, o IPTU, as taxas ordinárias de condomínio, as despesas de água, energia elétrica, telefone e demais tributos e tarifas que incidam sobre o imóvel ou sobre a atividade nele exercida.
@@ -926,7 +927,7 @@ const CAMPOS=[['locador.nome','nome do locador'],['locador.doc','CPF/CNPJ do loc
   ['fiador.nome','nome do fiador'],['fiador.doc','CPF/CNPJ do fiador'],['fiador.endereco','endereço do fiador'],
   ['imovel.endereco','endereço do imóvel'],['imovel.descricao','descrição do imóvel'],['imovel.tipo','tipo do imóvel'],['imovel.cidade','cidade do imóvel'],
   ['contrato.numero','número do contrato'],['contrato.inicio','data de início'],['contrato.fim','data de término'],['contrato.prazo','prazo em meses'],['contrato.aluguel','valor do aluguel'],['contrato.aluguelExtenso','aluguel por extenso'],
-  ['contrato.diaVenc','dia do vencimento'],['contrato.indice','índice de reajuste'],['contrato.garantia','garantia'],['contrato.caucao','valor da caução'],['contrato.finalidade','finalidade'],['contrato.atividade','ramo de atividade'],
+  ['contrato.diaVenc','dia do vencimento'],['contrato.indice','índice de reajuste'],['contrato.periodoReajusteExtenso','período do reajuste'],['contrato.garantia','garantia'],['contrato.caucao','valor da caução'],['contrato.finalidade','finalidade'],['contrato.atividade','ramo de atividade'],
   ['config.multa','multa por atraso'],['config.jurosMes','juros ao mês'],['hoje','data de hoje por extenso']];
 const LBL=Object.fromEntries(CAMPOS);
 function extenso(v){v=Math.round(num(v)*100)/100;const r=Math.floor(v),c=Math.round((v-r)*100);
@@ -945,7 +946,7 @@ function ctxOf(c){
   return {locador:P(get('pessoas',c.locador)),inquilino:P(get('pessoas',c.inquilino)),fiador:P(get('pessoas',c.fiador)),caucao:num(c.caucao)>0?true:null,
     imovel:IM?{endereco:endereco(IM),descricao:IM.descricao,tipo:IM.tipo,codigo:IM.codigo,cidade:IM.cidade}:{},
     contrato:{numero:c.numero,inicio:c.inicio?fd(c.inicio):'',fim:c.fim?fd(c.fim):'',prazo:c.prazo?String(c.prazo):'',aluguel:c.aluguel?fmt(c.aluguel):'',aluguelExtenso:c.aluguel?extenso(c.aluguel):'',
-      diaVenc:c.diaVenc?String(c.diaVenc):'',indice:c.indice,garantia:c.garantia,caucao:num(c.caucao)?fmt(c.caucao):'',caucaoExtenso:num(c.caucao)?extenso(c.caucao):'',finalidade:c.finalidade||'residenciais',atividade:c.atividade},
+      diaVenc:c.diaVenc?String(c.diaVenc):'',indice:c.indice,periodoReajusteExtenso:(n=>n?n+' ('+({6:'seis',12:'doze',18:'dezoito',24:'vinte e quatro',30:'trinta',36:'trinta e seis'}[n]||n)+') meses':'')(perReaj(c)),garantia:c.garantia,caucao:num(c.caucao)?fmt(c.caucao):'',caucaoExtenso:num(c.caucao)?extenso(c.caucao):'',finalidade:c.finalidade||'residenciais',atividade:c.atividade},
     config:{multa:pct(C.config.multa),jurosMes:pct(C.config.jurosMes),empresa:C.config.empresa},hoje:dataExtenso(TODAY)};
 }
 function fillDoc(tpl,cx){
@@ -1231,7 +1232,7 @@ async function removeRow(c,id){
 }
 function reajuste(id){
   const c=get('contratos',id);if(!c)return;const {p,v}=sugestao(c),atual=num(c.aluguel),aniv=proxReaj(c);
-  modal(`<div class="wide"></div><h3>Reajuste anual do aluguel</h3><p>${esc(MODS.contratos.title(c))} · ${esc(nome('pessoas',c.inquilino))}</p>
+  modal(`<div class="wide"></div><h3>Reajuste do aluguel · a cada ${perReaj(c)} meses</h3><p>${esc(MODS.contratos.title(c))} · ${esc(nome('pessoas',c.inquilino))}</p>
   <form id="rf" novalidate><div class="fgrid">
     <div class="field"><label>Aluguel atual</label><div class="calc"><span class="num">${fmt(atual)}</span></div></div>
     <div class="field"><label>Data do reajuste</label><div class="calc"><span>${fd(aniv)}</span>${prazoBadge(days(aniv))}</div></div>
