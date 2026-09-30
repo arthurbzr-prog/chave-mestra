@@ -833,20 +833,15 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-{{locador.nome}}
 LOCADOR(A)
 
 _______________________________________
-{{inquilino.nome}}
 LOCATÁRIO(A)
 {{#fiador}}
 
 _______________________________________
-{{fiador.nome}}
 FIADOR(A)
 {{/fiador}}
-
-TESTEMUNHAS:
 
 _______________________________________
 TESTEMUNHA 1
@@ -934,20 +929,15 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-{{locador.nome}}
 LOCADOR(A)
 
 _______________________________________
-{{inquilino.nome}}
 LOCATÁRIO(A)
 {{#fiador}}
 
 _______________________________________
-{{fiador.nome}}
 FIADOR(A)
 {{/fiador}}
-
-TESTEMUNHAS:
 
 _______________________________________
 TESTEMUNHA 1
@@ -1017,14 +1007,10 @@ E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (d
 {{imovel.cidade}}, {{hoje}}.
 
 _______________________________________
-{{locador.nome}}
 LOCADOR(A)
 
 _______________________________________
-{{inquilino.nome}}
 LOCATÁRIO(A)
-
-TESTEMUNHAS:
 
 _______________________________________
 TESTEMUNHA 1
@@ -1086,7 +1072,7 @@ function gerarDoc(id,mi){
   const fname=`Contrato ${c.numero||''} - ${nome('pessoas',c.inquilino)}`.replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,' ').trim();
   modal(`<div class="wide"></div><h3>Contrato preenchido</h3><div class="subtabs" style="margin:10px 18px 0" role="tablist" aria-label="Modelo">${[0,1,2].map(i=>`<button role="tab" data-mdl="${i}" aria-selected="${i===mi}">Modelo ${i+1} · ${esc(mdl(i).nome)}</button>`).join('')}</div>
   ${miss.length?`<p class="warnbox">Faltam ${miss.length} dado(s), marcados em amarelo: ${esc(miss.join(', '))}. Complete em Pessoas, Imóveis ou no próprio contrato e gere de novo.</p>`:'<p>Todos os campos foram preenchidos com os cadastros.</p>'}
-  <style>.doc .sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid} .doc .sigl{border-top:1px solid #111;margin-bottom:.35em} .doc .sign{font-weight:bold} .doc .sigr{font-size:.92em}</style><div class="body"><div class="doc" id="docv">${html}</div></div>
+  <style>.doc{font-size:13px;line-height:1.55} .doc p.h{font-size:14px} .doc .sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid} .doc .sigl{border-top:1px solid #111;margin-bottom:.35em} .doc .sign{font-weight:bold} .doc .sigr{font-size:.92em}</style><div class="body"><div class="doc" id="docv">${html}</div></div>
   <div class="sheet-f"><button class="btn" data-x>Fechar</button><button class="btn" data-copy>Copiar texto</button>${C.downloads?'<button class="btn" data-dl>Baixar contrato (.html)</button>':''}<button class="btn primary" data-prt>${ICON.print} Imprimir contrato</button></div>`,(el,close)=>{
     el.querySelector('[data-x]').onclick=close;
     el.querySelectorAll('[data-mdl]').forEach(b=>b.onclick=()=>{close();gerarDoc(id,+b.dataset.mdl)});
@@ -1095,7 +1081,7 @@ function gerarDoc(id,mi){
     if(prt)prt.onclick=async()=>{if(window.MIDIA||window.__sb){try{const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.srcdoc=pagina();f.onload=()=>setTimeout(()=>{try{f.contentWindow.print()}catch(x){}setTimeout(()=>f.remove(),60000)},300);return}catch(x){}}
       if(C.downloads){try{await C.downloads.save({filename:fname+'.html',data:pagina()});toast('Contrato salvo. Abra o arquivo no navegador e imprima (ou salve em PDF).')}catch(e){if(e&&e.code!=='declined')toast('Não foi possível imprimir aqui. Use “Copiar texto”.')}}else{try{const w=window.open('','_blank');w.document.write(pagina());w.document.close();setTimeout(()=>w.print(),400)}catch(e){toast('Não foi possível imprimir aqui. Use “Copiar texto”.')}}};
     const pagina=()=>{
-      const page=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(fname)}</title><style>body{font-family:Georgia,'Times New Roman',serif;font-size:12pt;line-height:1.6;max-width:17cm;margin:2cm auto;color:#111}p{margin:0 0 .9em;text-align:justify}p.h{text-align:center;font-weight:bold;font-size:13pt;margin-bottom:1.4em}p.cl{margin-top:1.2em}p.cl:first-line{font-weight:bold}p.sig{margin-top:2.2em;text-align:left}mark{background:#ffe58a}.sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid}.sigl{border-top:1px solid #111;margin-bottom:.35em}.sign{font-weight:bold}.sigr{font-size:.92em}@page{margin:2cm 2cm 2.6cm;@bottom-right{content:"";border-top:1px solid #111;width:6cm;height:0;margin-top:1.1cm}}@media print{body{margin:0 auto}}</style></head><body>${html.replace(/<span class="fill">(.*?)<\/span>/g,'$1')}</body></html>`;
+      const page=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(fname)}</title><style>body{font-family:Georgia,'Times New Roman',serif;font-size:10.5pt;line-height:1.45;max-width:17cm;margin:2cm auto;color:#111}p{margin:0 0 .9em;text-align:justify}p.h{text-align:center;font-weight:bold;font-size:11.5pt;margin-bottom:1.2em}p.cl{margin-top:1.2em}p.cl:first-line{font-weight:bold}p.sig{margin-top:2.2em;text-align:left}mark{background:#ffe58a}.sigb{width:65%;margin:2.8em auto 0;text-align:center;page-break-inside:avoid;break-inside:avoid}.sigl{border-top:1px solid #111;margin-bottom:.35em}.sign{font-weight:bold}.sigr{font-size:.92em}@page{margin:2cm 2cm 2.6cm;@bottom-right{content:"";border-top:1px solid #111;width:6cm;height:0;margin-top:1.1cm}}@media print{body{margin:0 auto}}</style></head><body>${html.replace(/<span class="fill">(.*?)<\/span>/g,'$1')}</body></html>`;
       return page};
     if(dl)dl.onclick=async()=>{const page=pagina();
       try{await C.downloads.save({filename:fname+'.html',data:page});toast('Contrato salvo. Abra no Word ou no navegador para imprimir.')}catch(e){if(e&&e.code!=='declined')toast('Não foi possível baixar aqui. Use “Copiar texto”.')}};
