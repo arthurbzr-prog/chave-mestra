@@ -1085,11 +1085,11 @@ function gerarDoc(id,mi){
 <script>(function(){var D="${new Date().toLocaleDateString('pt-BR')}",src=document.getElementById('src'),bl=[];
 Array.prototype.slice.call(src.children).forEach(function(el){if(el.tagName==='P'&&el.innerHTML.indexOf('<br>')>=0){var ps=el.innerHTML.split('<br>');ps.forEach(function(h,k){var p=document.createElement('p');p.innerHTML=h;p.className=k===0?(el.className==='cl'?'clt':el.className):'cont';if(k<ps.length-1)p.style.marginBottom='0';bl.push(p)})}else bl.push(el)});
 src.parentNode.removeChild(src);var pgs=[];
-function nova(){var g=document.createElement('div');g.className='pg';g.innerHTML='<div class="hd"><span>'+D+'</span><span class="num"></span></div><div class="ct"></div><div class="ft"><span></span></div>';document.body.appendChild(g);pgs.push(g);return g.querySelector('.ct')}
+function nova(){var g=document.createElement('div');g.className='pg';g.innerHTML='<div class="hd"></div><div class="ct"></div><div class="ft"><span></span></div>';document.body.appendChild(g);pgs.push(g);return g.querySelector('.ct')}
 var ct=nova();
 for(var i=0;i<bl.length;i++){var b=bl[i],nx=((b.className==='clt'||b.className==='h')&&bl[i+1])?bl[i+1]:null;ct.appendChild(b);if(nx)ct.appendChild(nx);
 if(ct.scrollHeight>ct.clientHeight+1&&ct.children.length>(nx?2:1)){ct=nova();ct.appendChild(b);if(nx)ct.appendChild(nx)}if(nx)i++}
-pgs.forEach(function(g,k){g.querySelector('.num').textContent='Página '+(k+1)+' de '+pgs.length})})()<\/script></body></html>`;
+pgs.length})()<\/script></body></html>`;
       return page};
     if(dl)dl.onclick=async()=>{const page=pagina();
       try{await C.downloads.save({filename:fname+'.html',data:page});toast('Contrato salvo. Abra no Word ou no navegador para imprimir.')}catch(e){if(e&&e.code!=='declined')toast('Não foi possível baixar aqui. Use “Copiar texto”.')}};
