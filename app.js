@@ -598,7 +598,7 @@ imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo
     ...ADDR.map(f=>f.k==='logradouro'?{...f,req:1}:f),
     {t:'sec',l:'Valores e situação'},{k:'aluguel',l:'Valor do aluguel (R$)',t:'money',req:1},{k:'status',l:'Situação',t:'sel',opt:OPT.statusImovel},
     {k:'condominio',l:'Condomínio (R$)',t:'money'},{k:'iptu',l:'IPTU mensal (R$)',t:'money'},
-    {k:'locador',l:'Locador (proprietário)',t:'ref',ref:'pessoas',filter:p=>p.tipo==='Locador',full:1,hint:'Usado para preencher o contrato automaticamente.'},
+    {k:'locador',l:'Pessoa responsável (locador, locatário, inquilino ou fiador)',t:'ref',ref:'pessoas',groupBy:'tipo',full:1,hint:'Escolha qualquer pessoa cadastrada; as opções aparecem separadas por tipo. É usada para preencher o contrato automaticamente.'},
     {t:'sec',l:'Descrição'},{k:'quartos',l:'Quartos',t:'num'},{k:'banheiros',l:'Banheiros',t:'num'},{k:'vagas',l:'Vagas de garagem',t:'num'},{k:'area',l:'Área (m²)',t:'num'},
     {k:'descricao',l:'Descrição do imóvel',t:'area',full:1,ph:'Ex.: 2 quartos (1 suíte), sala, cozinha com armários, área de serviço, 1 vaga…',hint:'Vai para o contrato e para as vistorias.'},
     {k:'obs',l:'Observações internas',t:'area',full:1}],
@@ -1120,7 +1120,9 @@ function fieldHtml(f,v,pre){
   if(f.t==='sel')input=`<select id="${id}" data-k="${f.k}"><option value="">—</option>${(typeof f.opt==='function'?f.opt():f.opt).map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o];return `<option value="${esc(ov)}" ${String(ov)===String(v??'')?'selected':''}>${esc(ol)}</option>`}).join('')}</select>`;
   else if(f.t==='ref'){const T=MODS[f.ref].title;let list=rows(f.ref).filter(f.filter||(()=>true)).sort((a,b)=>T(a).localeCompare(T(b)));
     const cur=get(f.ref,v);if(cur&&!list.some(r=>r.id===v))list.unshift(cur);
-    input=`<select id="${id}" data-k="${f.k}"><option value="">${list.length?'Selecione…':'Nenhum cadastrado ainda'}</option>${list.map(r=>`<option value="${esc(r.id)}" ${r.id===v?'selected':''}>${esc(T(r))}</option>`).join('')}</select>`}
+    const opt=r=>`<option value="${esc(r.id)}" ${r.id===v?'selected':''}>${esc(T(r))}</option>`;
+    const body=f.groupBy?[...OPT.tipoPessoa,''].map(g=>{const it=list.filter(r=>g?r[f.groupBy]===g:!OPT.tipoPessoa.includes(r[f.groupBy]));return it.length?`<optgroup label="${esc(g?g+(g.endsWith('r')?'es':'s'):'Sem tipo')}">${it.map(opt).join('')}</optgroup>`:''}).join(''):list.map(opt).join('');
+    input=`<select id="${id}" data-k="${f.k}"><option value="">${list.length?'Selecione…':'Nenhum cadastrado ainda'}</option>${body}</select>`}
   else if(f.t==='multi'){const sel=Array.isArray(v)?v:(v?[v]:[]);input=`<div class="mchips" id="${id}" role="group">${f.opt.map(o=>`<label class="mchk"><input type="checkbox" value="${esc(o)}" ${sel.includes(o)?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div>`}
   else if(f.t==='area')input=`<textarea id="${id}" data-k="${f.k}" ${f.ph?`placeholder="${esc(f.ph)}"`:''}>${esc(v||'')}</textarea>`;
   else if(f.t==='photo'||f.t==='media')input=`<div class="media${f.t==='photo'?' mphoto':''}" data-media="${f.k}"><div class="mlist"></div>${C.assets?`<label class="btn upl">${ICON.cam} ${f.t==='photo'?'Escolher foto':'Adicionar fotos ou vídeos'}<input type="file" id="${id}" data-mfile="${f.k}" accept="${f.t==='photo'?'image/*':'image/*,video/mp4,video/webm'}" ${f.t==='media'?'multiple':''}></label>`:'<span class="meta">O envio de arquivos funciona no aplicativo publicado, para quem pode editar.</span>'}<span class="meta mstat"></span></div>`;
