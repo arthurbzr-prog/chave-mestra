@@ -770,7 +770,7 @@ LOCATÁRIO(A): {{inquilino.nome}}, {{inquilino.nacionalidade}}, {{inquilino.esta
 {{#fiador}}
 FIADOR(A): {{fiador.nome}}, {{fiador.nacionalidade}}, {{fiador.estadoCivil}}, {{fiador.profissao}}, portador(a) do RG nº {{fiador.rg}}, inscrito(a) no CPF/CNPJ sob o nº {{fiador.doc}}, residente e domiciliado(a) em {{fiador.endereco}}.
 {{/fiador}}
-As partes acima identificadas têm entre si justo e contratado o presente Contrato de Locação, que se regerá pelas cláusulas seguintes e pela Lei nº 8.245/1991 (Lei do Inquilinato).
+Pelo presente instrumento, e na melhor forma de direito, as partes contratantes acima qualificadas e designadas têm, entre si, justo e acertado o presente Contrato de Locação de bem imóvel residencial, que se regerá pelas cláusulas seguintes, estabelecidas em comum acordo, e pela Lei nº 8.245/1991 (Lei do Inquilinato).
 
 CLÁUSULA 1ª – DO OBJETO
 O objeto deste contrato é a locação do imóvel ({{imovel.tipo}}) situado em {{imovel.endereco}}, assim descrito: {{imovel.descricao}}.
@@ -785,30 +785,48 @@ Parágrafo único. O atraso no pagamento implicará multa de {{config.multa}} so
 CLÁUSULA 4ª – DO REAJUSTE
 O aluguel será reajustado a cada período de {{contrato.periodoReajusteExtenso}}, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
 
-CLÁUSULA 5ª – DOS ENCARGOS
-Além do aluguel, caberá ao(à) LOCATÁRIO(A) o pagamento das despesas de consumo de água, energia elétrica e gás, das taxas ordinárias de condomínio e do IPTU incidente sobre o imóvel durante a locação, salvo acordo diverso por escrito.
+CLÁUSULA 5ª – DOS ENCARGOS E DESPESAS
+Todas as despesas diretamente ligadas à conservação e ao uso do imóvel, tais como água e esgoto (CAERN), energia elétrica (COSERN), IPTU, gás, telefone, taxas ordinárias de condomínio e outras ligadas ao imóvel, bem como as multas decorrentes do não pagamento ou do atraso dessas quantias e os tributos e despesas feitos em órgãos públicos relativos ao imóvel durante a locação, ficarão sob a responsabilidade do(a) LOCATÁRIO(A).
+Parágrafo primeiro. O(A) LOCATÁRIO(A) deverá efetuar, logo após o recebimento das chaves, a troca de titularidade junto à Companhia Energética do Rio Grande do Norte (COSERN) e à Companhia de Águas e Esgotos do Rio Grande do Norte (CAERN) para o seu nome, ficando responsável pelo pagamento das contas de consumo desses serviços.
+Parágrafo segundo. O(A) LOCATÁRIO(A) deverá guardar os respectivos comprovantes de pagamento e apresentá-los ao(à) LOCADOR(A) sempre que solicitados.
 
-CLÁUSULA 6ª – DA GARANTIA
+CLÁUSULA 6ª – DO ATRASO NO PAGAMENTO
+Em caso de atraso no pagamento do aluguel ou dos encargos por período superior a 30 (trinta) dias, o(a) LOCATÁRIO(A) será notificado(a) pelos meios legais e o contrato poderá ser rescindido por infração, com a propositura da ação de despejo por falta de pagamento (arts. 9º, III, e 62 da Lei nº 8.245/1991), sem prejuízo da cobrança dos valores devidos e sem direito a qualquer indenização por parte do(a) LOCADOR(A).
+Parágrafo único. Não configurarão novação ou alteração das cláusulas deste instrumento os atos de mera tolerância do(a) LOCADOR(A) quanto ao atraso no pagamento do aluguel ou de quaisquer tributos e despesas.
+
+CLÁUSULA 7ª – DA GARANTIA
 Em garantia das obrigações deste contrato, fica estabelecida a modalidade: {{contrato.garantia}}.{{#caucao}} O valor da caução é de {{contrato.caucao}} ({{contrato.caucaoExtenso}}), a ser devolvido ao final da locação, descontados eventuais débitos.{{/caucao}}{{#fiador}} O(A) FIADOR(A) acima qualificado(a) responde solidariamente por todas as obrigações deste contrato até a efetiva entrega das chaves, renunciando ao benefício de ordem previsto no art. 827 do Código Civil.{{/fiador}}
 
-CLÁUSULA 7ª – DA VISTORIA E CONSERVAÇÃO
-O(A) LOCATÁRIO(A) declara receber o imóvel nas condições descritas no laudo de vistoria de entrega das chaves, que integra este contrato, obrigando-se a conservá-lo e a devolvê-lo no mesmo estado, ressalvado o desgaste natural do uso.
+CLÁUSULA 8ª – DA MANUTENÇÃO E DOS REPAROS
+Quanto a qualquer situação de reforma, manutenção ou eventual problema que venha a ocorrer no imóvel, o(a) LOCATÁRIO(A) comunicará o fato ao(à) LOCADOR(A) e solicitará uma visita presencial ao imóvel, em data e hora previamente acordadas, para que o(a) LOCADOR(A) tome conhecimento e verifique a situação antes de qualquer providência.
+Parágrafo único. Os reparos de danos causados pelo(a) LOCATÁRIO(A), seus familiares, dependentes, prepostos ou visitantes, e os pequenos reparos decorrentes do uso, ficam a cargo do(a) LOCATÁRIO(A); os reparos de defeitos estruturais ou anteriores à locação, que não tenham sido causados pelo(a) LOCATÁRIO(A), ficam a cargo do(a) LOCADOR(A), nos termos dos arts. 22 e 23 da Lei nº 8.245/1991.
 
-CLÁUSULA 8ª – DAS BENFEITORIAS
+CLÁUSULA 9ª – DO DIREITO DE PREFERÊNCIA E DAS VISTORIAS ESPORÁDICAS
+O(A) LOCATÁRIO(A) permitirá ao(à) LOCADOR(A), ou a seus representantes, realizar vistorias no imóvel em dia e hora previamente combinados, podendo verificar o funcionamento de todas as instalações, acessórios e equipamentos de segurança. Constatado algum dano causado pelo uso inadequado ou pela falta de conservação que possa afetar a estrutura física do imóvel, o(a) LOCATÁRIO(A) deverá realizar o conserto no prazo de até 30 (trinta) dias. Não ocorrendo o conserto, o(a) LOCADOR(A) poderá rescindir o contrato por infração contratual, sem prejuízo do recebimento dos aluguéis e encargos devidos.
+Parágrafo primeiro. Em caso de venda, promessa de venda, cessão de direitos ou dação em pagamento do imóvel, o(a) LOCADOR(A) deverá notificar o(a) LOCATÁRIO(A) para que exerça seu direito de preferência na aquisição, em igualdade de condições com terceiros (arts. 27 a 34 da Lei nº 8.245/1991). Para exercer a preferência, o(a) LOCATÁRIO(A) deverá responder à notificação, de maneira inequívoca, no prazo de 30 (trinta) dias.
+Parágrafo segundo. Não havendo interesse na aquisição, o(a) LOCATÁRIO(A) deverá permitir que os interessados na compra visitem o imóvel em dias e horários combinados entre LOCATÁRIO(A) e LOCADOR(A).
+
+CLÁUSULA 10ª – DAS BENFEITORIAS
 Nenhuma obra ou modificação poderá ser feita no imóvel sem autorização prévia e por escrito do(a) LOCADOR(A). As benfeitorias realizadas incorporam-se ao imóvel, sem direito a indenização ou retenção, salvo ajuste escrito.
 
-CLÁUSULA 9ª – DA CESSÃO E SUBLOCAÇÃO
+CLÁUSULA 11ª – DA CESSÃO E SUBLOCAÇÃO
 É vedado ao(à) LOCATÁRIO(A) ceder, sublocar ou emprestar o imóvel, no todo ou em parte, sem consentimento prévio e escrito do(a) LOCADOR(A).
 
-CLÁUSULA 10ª – DA DESTINAÇÃO
+CLÁUSULA 12ª – DA DESTINAÇÃO
 O imóvel destina-se exclusivamente a fins {{contrato.finalidade}}, não podendo ter sua destinação alterada sem autorização por escrito do(a) LOCADOR(A).
 
-CLÁUSULA 11ª – DA RESCISÃO E DA MULTA
-A infração de qualquer cláusula deste contrato sujeitará a parte infratora à multa equivalente a 3 (três) aluguéis vigentes à época da infração. Caso o(a) LOCATÁRIO(A) devolva o imóvel antes do término do prazo, pagará a multa proporcionalmente ao período restante, nos termos do art. 4º da Lei nº 8.245/1991.
+CLÁUSULA 13ª – DA VISTORIA E DA DEVOLUÇÃO DO IMÓVEL FINDO O PRAZO DA LOCAÇÃO
+O(A) LOCATÁRIO(A) declara receber o imóvel nas condições descritas no laudo de vistoria de entrega das chaves e obriga-se a conservá-lo e a restituí-lo, ao final da locação, nas mesmas condições em que o recebeu: pintado com tinta na cor original da data da entrega, com as instalações elétricas, hidráulicas e acessórios em perfeitas condições de funcionamento, ressalvadas as deteriorações decorrentes do uso normal e habitual do imóvel.
+Parágrafo primeiro. Os laudos de vistoria inicial (entrega das chaves) e final (recebimento das chaves) fazem parte deste contrato e conterão a assinatura dos contratantes e de 2 (duas) testemunhas.
+Parágrafo segundo. Caso o imóvel não seja devolvido nessas condições e o(a) LOCADOR(A), por esse motivo, não o receba, o(a) LOCATÁRIO(A) continuará obrigado(a) a pagar os aluguéis e encargos que forem vencendo até a regularização do imóvel e a quitação de todos os débitos a ele referentes.
 
-CLÁUSULA 12ª – DO FORO
+CLÁUSULA 14ª – DA RESCISÃO E DA MULTA
+Ocorrerá a rescisão do presente contrato, independentemente de indenização por parte do(a) LOCADOR(A), nas seguintes hipóteses: descumprimento de quaisquer das cláusulas e condições deste contrato; perturbação do sossego, da ordem ou emissão de ruído excessivo; inadimplência do(a) LOCATÁRIO(A); ou abandono do imóvel, a qualquer época.
+Parágrafo primeiro. A infração de qualquer cláusula deste contrato sujeitará a parte infratora à multa equivalente a 3 (três) aluguéis vigentes à época da infração. Caso o(a) LOCATÁRIO(A) devolva o imóvel antes do término do prazo, pagará a multa proporcionalmente ao período restante, nos termos do art. 4º da Lei nº 8.245/1991.
+Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) testemunhas, o(a) LOCADOR(A) ou seu procurador poderá retomar a posse na forma da lei (art. 66 da Lei nº 8.245/1991), correndo por conta do(a) LOCATÁRIO(A) todas as despesas decorrentes, inclusive a remoção e a taxa de armazenamento dos móveis e objetos deixados no imóvel.
+
+CLÁUSULA 15ª – DO FORO
 Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
-
 E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
@@ -833,7 +851,7 @@ LOCATÁRIO(A): {{inquilino.nome}}, inscrito(a) no CPF/CNPJ sob o nº {{inquilino
 {{#fiador}}
 FIADOR(A): {{fiador.nome}}, {{fiador.nacionalidade}}, {{fiador.estadoCivil}}, {{fiador.profissao}}, portador(a) do RG nº {{fiador.rg}}, inscrito(a) no CPF/CNPJ sob o nº {{fiador.doc}}, residente e domiciliado(a) em {{fiador.endereco}}.
 {{/fiador}}
-As partes acima identificadas têm entre si justo e contratado o presente Contrato de Locação Não Residencial, que se regerá pelas cláusulas seguintes e pela Lei nº 8.245/1991.
+Pelo presente instrumento, e na melhor forma de direito, as partes contratantes acima qualificadas e designadas têm, entre si, justo e acertado o presente Contrato de Locação de bem imóvel comercial (locação não residencial), que se regerá pelas cláusulas seguintes, estabelecidas em comum acordo, e pela Lei nº 8.245/1991 (Lei do Inquilinato).
 
 CLÁUSULA 1ª – DO OBJETO
 O objeto deste contrato é a locação do imóvel ({{imovel.tipo}}) situado em {{imovel.endereco}}, assim descrito: {{imovel.descricao}}.
@@ -851,33 +869,51 @@ Parágrafo único. O atraso no pagamento implicará multa de {{config.multa}} so
 CLÁUSULA 5ª – DO REAJUSTE
 O aluguel será reajustado a cada período de {{contrato.periodoReajusteExtenso}}, com base na variação acumulada do índice {{contrato.indice}}, ou de outro que legalmente o substitua.
 
-CLÁUSULA 6ª – DOS ENCARGOS E TRIBUTOS
-Correrão por conta do(a) LOCATÁRIO(A), durante toda a locação, o IPTU, as taxas ordinárias de condomínio, as despesas de água, energia elétrica, telefone e demais tributos e tarifas que incidam sobre o imóvel ou sobre a atividade nele exercida.
+CLÁUSULA 6ª – DOS ENCARGOS, TRIBUTOS E DESPESAS
+Todas as despesas diretamente ligadas à conservação e ao uso do imóvel, tais como água e esgoto (CAERN), energia elétrica (COSERN), IPTU, gás, telefone, taxas ordinárias de condomínio, tributos e tarifas incidentes sobre a atividade exercida no imóvel e outras ligadas ao imóvel, bem como as multas decorrentes do não pagamento ou do atraso dessas quantias e os tributos e despesas feitos em órgãos públicos relativos ao imóvel durante a locação, ficarão sob a responsabilidade do(a) LOCATÁRIO(A).
+Parágrafo primeiro. O(A) LOCATÁRIO(A) deverá efetuar, logo após o recebimento das chaves, a troca de titularidade junto à Companhia Energética do Rio Grande do Norte (COSERN) e à Companhia de Águas e Esgotos do Rio Grande do Norte (CAERN) para o seu nome, ficando responsável pelo pagamento das contas de consumo desses serviços.
+Parágrafo segundo. O(A) LOCATÁRIO(A) deverá guardar os respectivos comprovantes de pagamento e apresentá-los ao(à) LOCADOR(A) sempre que solicitados.
 
-CLÁUSULA 7ª – DAS LICENÇAS E ALVARÁS
+CLÁUSULA 7ª – DO ATRASO NO PAGAMENTO
+Em caso de atraso no pagamento do aluguel ou dos encargos por período superior a 30 (trinta) dias, o(a) LOCATÁRIO(A) será notificado(a) pelos meios legais e o contrato poderá ser rescindido por infração, com a propositura da ação de despejo por falta de pagamento (arts. 9º, III, e 62 da Lei nº 8.245/1991), sem prejuízo da cobrança dos valores devidos e sem direito a qualquer indenização por parte do(a) LOCADOR(A).
+Parágrafo único. Não configurarão novação ou alteração das cláusulas deste instrumento os atos de mera tolerância do(a) LOCADOR(A) quanto ao atraso no pagamento do aluguel ou de quaisquer tributos e despesas.
+
+CLÁUSULA 8ª – DAS LICENÇAS E ALVARÁS
 Compete exclusivamente ao(à) LOCATÁRIO(A) obter e manter em dia os alvarás, licenças e autorizações necessárias ao funcionamento de sua atividade, respondendo por multas e sanções decorrentes de sua falta.
 
-CLÁUSULA 8ª – DA GARANTIA
+CLÁUSULA 9ª – DA GARANTIA
 Em garantia das obrigações deste contrato, fica estabelecida a modalidade: {{contrato.garantia}}.{{#caucao}} O valor da caução é de {{contrato.caucao}} ({{contrato.caucaoExtenso}}), a ser devolvido ao final da locação, descontados eventuais débitos.{{/caucao}}{{#fiador}} O(A) FIADOR(A) acima qualificado(a) responde solidariamente por todas as obrigações deste contrato até a efetiva entrega das chaves, renunciando ao benefício de ordem previsto no art. 827 do Código Civil.{{/fiador}}
 
-CLÁUSULA 9ª – DAS OBRAS, BENFEITORIAS E FACHADA
+CLÁUSULA 10ª – DAS OBRAS, BENFEITORIAS E FACHADA
 Nenhuma obra, adaptação, instalação de letreiro, placa ou alteração de fachada poderá ser feita sem autorização prévia e por escrito do(a) LOCADOR(A). As benfeitorias incorporam-se ao imóvel, sem direito a indenização ou retenção, salvo ajuste escrito.
 
-CLÁUSULA 10ª – DO SEGURO
+CLÁUSULA 11ª – DO SEGURO
 O(A) LOCATÁRIO(A) obriga-se a contratar e manter, durante toda a locação, seguro contra incêndio do imóvel, tendo o(a) LOCADOR(A) como beneficiário(a).
 
-CLÁUSULA 11ª – DA VISTORIA E CONSERVAÇÃO
-O(A) LOCATÁRIO(A) declara receber o imóvel nas condições descritas no laudo de vistoria de entrega das chaves, que integra este contrato, obrigando-se a devolvê-lo no mesmo estado, ressalvado o desgaste natural do uso.
+CLÁUSULA 12ª – DA MANUTENÇÃO E DOS REPAROS
+Quanto a qualquer situação de reforma, manutenção ou eventual problema que venha a ocorrer no imóvel, o(a) LOCATÁRIO(A) comunicará o fato ao(à) LOCADOR(A) e solicitará uma visita presencial ao imóvel, em data e hora previamente acordadas, para que o(a) LOCADOR(A) tome conhecimento e verifique a situação antes de qualquer providência.
+Parágrafo único. Os reparos de danos causados pelo(a) LOCATÁRIO(A), seus familiares, dependentes, prepostos ou visitantes, e os pequenos reparos decorrentes do uso, ficam a cargo do(a) LOCATÁRIO(A); os reparos de defeitos estruturais ou anteriores à locação, que não tenham sido causados pelo(a) LOCATÁRIO(A), ficam a cargo do(a) LOCADOR(A), nos termos dos arts. 22 e 23 da Lei nº 8.245/1991.
 
-CLÁUSULA 12ª – DA CESSÃO E SUBLOCAÇÃO
+CLÁUSULA 13ª – DO DIREITO DE PREFERÊNCIA E DAS VISTORIAS ESPORÁDICAS
+O(A) LOCATÁRIO(A) permitirá ao(à) LOCADOR(A), ou a seus representantes, realizar vistorias no imóvel em dia e hora previamente combinados, podendo verificar o funcionamento de todas as instalações, acessórios e equipamentos de segurança. Constatado algum dano causado pelo uso inadequado ou pela falta de conservação que possa afetar a estrutura física do imóvel, o(a) LOCATÁRIO(A) deverá realizar o conserto no prazo de até 30 (trinta) dias. Não ocorrendo o conserto, o(a) LOCADOR(A) poderá rescindir o contrato por infração contratual, sem prejuízo do recebimento dos aluguéis e encargos devidos.
+Parágrafo primeiro. Em caso de venda, promessa de venda, cessão de direitos ou dação em pagamento do imóvel, o(a) LOCADOR(A) deverá notificar o(a) LOCATÁRIO(A) para que exerça seu direito de preferência na aquisição, em igualdade de condições com terceiros (arts. 27 a 34 da Lei nº 8.245/1991). Para exercer a preferência, o(a) LOCATÁRIO(A) deverá responder à notificação, de maneira inequívoca, no prazo de 30 (trinta) dias.
+Parágrafo segundo. Não havendo interesse na aquisição, o(a) LOCATÁRIO(A) deverá permitir que os interessados na compra visitem o imóvel em dias e horários combinados entre LOCATÁRIO(A) e LOCADOR(A).
+
+CLÁUSULA 14ª – DA CESSÃO E SUBLOCAÇÃO
 É vedado ao(à) LOCATÁRIO(A) ceder, sublocar ou transferir a locação, no todo ou em parte, inclusive por alteração do controle societário, sem consentimento prévio e escrito do(a) LOCADOR(A).
 
-CLÁUSULA 13ª – DA RESCISÃO E DA MULTA
-A infração de qualquer cláusula deste contrato sujeitará a parte infratora à multa equivalente a 3 (três) aluguéis vigentes à época da infração. A devolução antecipada do imóvel sujeitará o(a) LOCATÁRIO(A) ao pagamento da multa proporcional ao período restante.
+CLÁUSULA 15ª – DA VISTORIA E DA DEVOLUÇÃO DO IMÓVEL FINDO O PRAZO DA LOCAÇÃO
+O(A) LOCATÁRIO(A) declara receber o imóvel nas condições descritas no laudo de vistoria de entrega das chaves e obriga-se a conservá-lo e a restituí-lo, ao final da locação, nas mesmas condições em que o recebeu: pintado com tinta na cor original da data da entrega, com as instalações elétricas, hidráulicas e acessórios em perfeitas condições de funcionamento, ressalvadas as deteriorações decorrentes do uso normal e habitual do imóvel.
+Parágrafo primeiro. Os laudos de vistoria inicial (entrega das chaves) e final (recebimento das chaves) fazem parte deste contrato e conterão a assinatura dos contratantes e de 2 (duas) testemunhas.
+Parágrafo segundo. Caso o imóvel não seja devolvido nessas condições e o(a) LOCADOR(A), por esse motivo, não o receba, o(a) LOCATÁRIO(A) continuará obrigado(a) a pagar os aluguéis e encargos que forem vencendo até a regularização do imóvel e a quitação de todos os débitos a ele referentes.
 
-CLÁUSULA 14ª – DO FORO
+CLÁUSULA 16ª – DA RESCISÃO E DA MULTA
+Ocorrerá a rescisão do presente contrato, independentemente de indenização por parte do(a) LOCADOR(A), nas seguintes hipóteses: descumprimento de quaisquer das cláusulas e condições deste contrato; perturbação do sossego, da ordem ou emissão de ruído excessivo; inadimplência do(a) LOCATÁRIO(A); ou abandono do imóvel, a qualquer época.
+Parágrafo primeiro. A infração de qualquer cláusula deste contrato sujeitará a parte infratora à multa equivalente a 3 (três) aluguéis vigentes à época da infração. A devolução antecipada do imóvel sujeitará o(a) LOCATÁRIO(A) ao pagamento da multa proporcional ao período restante (art. 4º da Lei nº 8.245/1991).
+Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) testemunhas, o(a) LOCADOR(A) ou seu procurador poderá retomar a posse na forma da lei (art. 66 da Lei nº 8.245/1991), correndo por conta do(a) LOCATÁRIO(A) todas as despesas decorrentes, inclusive a remoção e a taxa de armazenamento dos móveis e objetos deixados no imóvel.
+
+CLÁUSULA 17ª – DO FORO
 Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
-
 E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
@@ -900,7 +936,7 @@ LOCADOR(A): {{locador.nome}}, {{locador.nacionalidade}}, {{locador.estadoCivil}}
 
 LOCATÁRIO(A): {{inquilino.nome}}, {{inquilino.nacionalidade}}, {{inquilino.estadoCivil}}, {{inquilino.profissao}}, portador(a) do RG nº {{inquilino.rg}}, inscrito(a) no CPF/CNPJ sob o nº {{inquilino.doc}}, residente e domiciliado(a) em {{inquilino.endereco}}.
 
-As partes acima identificadas celebram o presente Contrato de Locação por Temporada, nos termos dos arts. 48 a 50 da Lei nº 8.245/1991, mediante as cláusulas seguintes.
+Pelo presente instrumento, e na melhor forma de direito, as partes contratantes acima qualificadas e designadas têm, entre si, justo e acertado o presente Contrato de Locação de bem imóvel por temporada, que se regerá pelas cláusulas seguintes, estabelecidas em comum acordo, e pela Lei nº 8.245/1991, especialmente os arts. 48 a 50.
 
 CLÁUSULA 1ª – DO OBJETO
 O objeto deste contrato é a locação, para fins de temporada, do imóvel ({{imovel.tipo}}) situado em {{imovel.endereco}}, assim descrito, inclusive quanto aos móveis e utensílios que o guarnecem: {{imovel.descricao}}.
@@ -914,16 +950,40 @@ O valor da locação é de {{contrato.aluguel}} ({{contrato.aluguelExtenso}}), q
 CLÁUSULA 4ª – DA UTILIZAÇÃO
 O imóvel destina-se exclusivamente à residência temporária do(a) LOCATÁRIO(A) e de seus acompanhantes, sendo vedada a sublocação ou cessão a terceiros, bem como a realização de eventos sem autorização do(a) LOCADOR(A).
 
-CLÁUSULA 5ª – DA CONSERVAÇÃO E DOS DANOS
-O(A) LOCATÁRIO(A) se obriga a conservar o imóvel, os móveis e os utensílios, devolvendo-os no estado em que os recebeu, conforme vistoria de entrega das chaves, e responde por quaisquer danos causados durante a estada.
+CLÁUSULA 5ª – DOS ENCARGOS E DESPESAS
+Salvo se incluídas no valor da temporada, conforme ajuste entre as partes, as despesas de consumo ligadas ao uso do imóvel durante a estada, tais como água e esgoto (CAERN), energia elétrica (COSERN), gás e telefone, bem como as multas decorrentes do não pagamento ou do atraso dessas quantias, ficarão sob a responsabilidade do(a) LOCATÁRIO(A), que deverá guardar os respectivos comprovantes de pagamento e apresentá-los ao(à) LOCADOR(A) quando solicitados.
+Parágrafo único. Pela curta duração da locação, fica dispensada a troca de titularidade das contas junto à COSERN e à CAERN, permanecendo o(a) LOCATÁRIO(A) responsável pelo consumo do período.
 
-CLÁUSULA 6ª – DA GARANTIA
+CLÁUSULA 6ª – DO ATRASO NO PAGAMENTO
+O não pagamento do valor da locação, ou de qualquer parcela dele, na data combinada autoriza o(a) LOCADOR(A) a notificar o(a) LOCATÁRIO(A) pelos meios legais e a considerar rescindido o contrato, com a desocupação do imóvel na forma da lei, sem prejuízo da cobrança dos valores devidos e sem direito a qualquer indenização por parte do(a) LOCADOR(A).
+Parágrafo único. Não configurarão novação ou alteração das cláusulas deste instrumento os atos de mera tolerância do(a) LOCADOR(A) quanto ao atraso no pagamento do aluguel ou de quaisquer tributos e despesas.
+
+CLÁUSULA 7ª – DA GARANTIA
 Fica estabelecida a garantia na modalidade: {{contrato.garantia}}.{{#caucao}} O valor da caução é de {{contrato.caucao}} ({{contrato.caucaoExtenso}}), a ser devolvido após a vistoria de recebimento das chaves, descontados eventuais danos.{{/caucao}}
 
-CLÁUSULA 7ª – DO FORO
-Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
+CLÁUSULA 8ª – DA MANUTENÇÃO E DOS REPAROS
+Quanto a qualquer situação de reforma, manutenção ou eventual problema que venha a ocorrer no imóvel, o(a) LOCATÁRIO(A) comunicará o fato ao(à) LOCADOR(A) e solicitará uma visita presencial ao imóvel, em data e hora previamente acordadas, para que o(a) LOCADOR(A) tome conhecimento e verifique a situação antes de qualquer providência.
+Parágrafo único. Os reparos de danos causados pelo(a) LOCATÁRIO(A), seus familiares, dependentes, prepostos ou visitantes, e os pequenos reparos decorrentes do uso, ficam a cargo do(a) LOCATÁRIO(A); os reparos de defeitos estruturais ou anteriores à locação, que não tenham sido causados pelo(a) LOCATÁRIO(A), ficam a cargo do(a) LOCADOR(A), nos termos dos arts. 22 e 23 da Lei nº 8.245/1991.
 
-E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor.
+CLÁUSULA 9ª – DO DIREITO DE PREFERÊNCIA E DAS VISTORIAS ESPORÁDICAS
+O(A) LOCATÁRIO(A) permitirá ao(à) LOCADOR(A), ou a seus representantes, realizar vistorias no imóvel em dia e hora previamente combinados, podendo verificar o funcionamento de todas as instalações, acessórios e equipamentos de segurança. Constatado algum dano causado pelo uso inadequado ou pela falta de conservação que possa afetar a estrutura física do imóvel, o(a) LOCATÁRIO(A) deverá realizar o conserto no prazo de até 30 (trinta) dias. Não ocorrendo o conserto, o(a) LOCADOR(A) poderá rescindir o contrato por infração contratual, sem prejuízo do recebimento dos aluguéis e encargos devidos.
+Parágrafo primeiro. Em caso de venda, promessa de venda, cessão de direitos ou dação em pagamento do imóvel, o(a) LOCADOR(A) deverá notificar o(a) LOCATÁRIO(A) para que exerça seu direito de preferência na aquisição, em igualdade de condições com terceiros (arts. 27 a 34 da Lei nº 8.245/1991). Para exercer a preferência, o(a) LOCATÁRIO(A) deverá responder à notificação, de maneira inequívoca, no prazo de 30 (trinta) dias.
+Parágrafo segundo. Não havendo interesse na aquisição, o(a) LOCATÁRIO(A) deverá permitir que os interessados na compra visitem o imóvel em dias e horários combinados entre LOCATÁRIO(A) e LOCADOR(A).
+
+CLÁUSULA 10ª – DA VISTORIA, DOS DANOS E DA DEVOLUÇÃO DO IMÓVEL FINDO O PRAZO DA LOCAÇÃO
+O(A) LOCATÁRIO(A) declara receber o imóvel, os móveis e os utensílios nas condições descritas no laudo de vistoria de entrega das chaves e obriga-se a conservá-lo e a restituí-lo, ao final da locação, nas mesmas condições em que o recebeu: pintado com tinta na cor original da data da entrega, com as instalações elétricas, hidráulicas e acessórios em perfeitas condições de funcionamento, ressalvadas as deteriorações decorrentes do uso normal e habitual do imóvel.
+Parágrafo primeiro. Os laudos de vistoria inicial (entrega das chaves) e final (recebimento das chaves) fazem parte deste contrato e conterão a assinatura dos contratantes e de 2 (duas) testemunhas.
+Parágrafo segundo. Caso o imóvel não seja devolvido nessas condições e o(a) LOCADOR(A), por esse motivo, não o receba, o(a) LOCATÁRIO(A) continuará obrigado(a) a pagar os aluguéis e encargos que forem vencendo até a regularização do imóvel e a quitação de todos os débitos a ele referentes.
+Parágrafo terceiro. O(A) LOCATÁRIO(A) responde por quaisquer danos causados ao imóvel, aos móveis e aos utensílios durante a estada.
+
+CLÁUSULA 11ª – DA RESCISÃO E DA MULTA
+Ocorrerá a rescisão do presente contrato, independentemente de indenização por parte do(a) LOCADOR(A), nas seguintes hipóteses: descumprimento de quaisquer das cláusulas e condições deste contrato; perturbação do sossego, da ordem ou emissão de ruído excessivo; inadimplência do(a) LOCATÁRIO(A); ou abandono do imóvel, a qualquer época.
+Parágrafo primeiro. A infração de qualquer cláusula deste contrato sujeitará a parte infratora à multa equivalente a 10% (dez por cento) do valor total da locação, sem prejuízo da reparação de eventuais danos.
+Parágrafo segundo. Constatado o abandono do imóvel, na presença de 2 (duas) testemunhas, o(a) LOCADOR(A) ou seu procurador poderá retomar a posse na forma da lei (art. 66 da Lei nº 8.245/1991), correndo por conta do(a) LOCATÁRIO(A) todas as despesas decorrentes, inclusive a remoção e a taxa de armazenamento dos móveis e objetos deixados no imóvel.
+
+CLÁUSULA 12ª – DO FORO
+Fica eleito o foro da comarca de {{imovel.cidade}} para dirimir quaisquer questões oriundas deste contrato.
+E, por estarem assim justos e contratados, firmam o presente instrumento em 2 (duas) vias de igual teor, na presença das testemunhas abaixo.
 
 {{imovel.cidade}}, {{hoje}}.
 
@@ -931,7 +991,11 @@ _______________________________________
 LOCADOR(A): {{locador.nome}}
 
 _______________________________________
-LOCATÁRIO(A): {{inquilino.nome}}`;
+LOCATÁRIO(A): {{inquilino.nome}}
+
+TESTEMUNHAS:
+1. ______________________________  CPF: ________________
+2. ______________________________  CPF: ________________`;
 const MODELOS_DEF=[{nome:'Residencial',texto:MODELO},{nome:'Comercial',texto:MODELO_COM},{nome:'Temporada',texto:MODELO_TEMP}];
 const mdl=i=>{const s=(C.config.modelos||[])[i]||{};return {nome:s.nome||MODELOS_DEF[i].nome,texto:s.texto||(i===0&&C.config.modelo)||MODELOS_DEF[i].texto}};
 const mdlOf=c=>{const m=parseInt(c.modelo,10);return m>=0&&m<3?m:(c.finalidade==='comerciais'?1:0)};
