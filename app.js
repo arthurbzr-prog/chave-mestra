@@ -468,6 +468,7 @@ const dataExtenso=s=>{const [y,m,d]=s.split('-').map(Number);return d+' de '+MES
 const blob=id=>window.MIDIA?window.MIDIA.src(id):'';
 
 const COLS=['precad','pessoas','imoveis','contratos','vistorias','financeiro','despesas','manutencao','estoque'];
+const taxaPct=imId=>{const i=imId&&C.data.imoveis[imId];return i&&i.cobraTaxa==='Não'?0:num(C.config.taxaAdm)};
 const DEF_CFG={empresa:'',taxaAdm:10,multa:2,jurosMes:1,igpm:4,ipca:4,inpc:4,alertaDias:30,modelo:''};
 const C={data:Object.fromEntries(COLS.map(c=>[c,{}])),config:{...DEF_CFG},mod:'painel',q:'',finMes:'',fMes:'',fAno:'',finIm:'',finTab:'receb',finAno:CUR.slice(0,4),finSel:'',db:null,assets:null,downloads:null,ready:false};
 const LSK='chave-mestra-v1';
@@ -607,18 +608,19 @@ pessoas:{nome:'Pessoas',sing:'pessoa',novo:'Nova pessoa',salvo:'Pessoa salva.',t
     ['Documento',r=>`<b>${esc(maskDoc(r.doc)||'—')}</b>`+(r.rg?`<div class="meta"><b>RG ${esc(r.rg)}${r.rgOrgao?' · '+esc(r.rgOrgao):''}</b>${r.rgExpedicao?' · exp. '+fd(r.rgExpedicao):''}</div>`:'')+(consBadges(r)?`<div class="cats">${consBadges(r)}</div>`:'')+(r.docFrente||r.docVerso?`<button class="btn sm" style="margin-top:4px" data-verdocs="${esc(r.id)}">${ICON.cam} fotos do RG</button>`:'')],['Contato',r=>esc(r.telefone||'—')+(r.email?`<div class="meta">${esc(r.email)}</div>`:'')],
     ['Endereço',r=>`<span class="meta">${esc(endereco(r)||'—')}</span>`]]},
 imoveis:{nome:'Imóveis',sing:'imóvel',novo:'Novo imóvel',salvo:'Imóvel salvo.',title:r=>(r.codigo?r.codigo+' · ':'')+([r.logradouro,r.numero].filter(Boolean).join(', ')||r.endereco||'Sem endereço'),
-  defaults:()=>({status:'Disponível',tipo:'Casa'}),sort:(a,b)=>(a.codigo||'').localeCompare(b.codigo||''),
+  defaults:()=>({status:'Disponível',tipo:'Casa',cobraTaxa:'Sim'}),sort:(a,b)=>(a.codigo||'').localeCompare(b.codigo||''),
   prep:v=>{if(!v.logradouro&&v.endereco)v.logradouro=v.endereco;return v},
   fields:[{k:'foto',l:'Foto do imóvel',t:'photo',full:1},{k:'codigo',l:'Código',t:'text',ph:'Ex.: IM-01'},{k:'tipo',l:'Tipo',t:'sel',opt:OPT.tipoImovel},
     ...ADDR.map(f=>f.k==='logradouro'?{...f,req:1}:f),
     {t:'sec',l:'Valores e situação'},{k:'aluguel',l:'Valor do aluguel (R$)',t:'money',req:1},{k:'status',l:'Situação',t:'sel',opt:OPT.statusImovel},
     {k:'condominio',l:'Condomínio (R$)',t:'money'},{k:'iptu',l:'IPTU mensal (R$)',t:'money'},
+    {k:'cobraTaxa',l:'Cobrar taxa de administração?',t:'sel',opt:()=>[['Sim','Sim · '+pct(C.config.taxaAdm)+' do aluguel (definida em Configurações)'],['Não','Não cobrar taxa neste imóvel']],hint:'Vale para os recebimentos lançados ou editados a partir de agora.'},
     {k:'locador',l:'Pessoa responsável (locador, locatário, inquilino ou fiador)',t:'ref',ref:'pessoas',groupBy:'tipo',full:1,hint:'Escolha qualquer pessoa cadastrada; as opções aparecem separadas por tipo. É usada para preencher o contrato automaticamente.'},
     {t:'sec',l:'Descrição'},{k:'quartos',l:'Quartos',t:'num'},{k:'banheiros',l:'Banheiros',t:'num'},{k:'vagas',l:'Vagas de garagem',t:'num'},{k:'area',l:'Área (m²)',t:'num'},
     {k:'descricao',l:'Descrição do imóvel',t:'area',full:1,ph:'Ex.: 2 quartos (1 suíte), sala, cozinha com armários, área de serviço, 1 vaga…',hint:'Vai para o contrato e para as vistorias.'},
     {k:'obs',l:'Observações internas',t:'area',full:1}],
   cols:[['Imóvel',r=>`<div class="withthumb">${thumb(r.foto)}<div><b>${esc(r.codigo||'')}</b> ${esc(r.tipo||'')}<div class="meta">${esc(endereco(r))}</div></div></div>`],
-    ['Descrição',r=>`<span class="meta clamp">${esc(r.descricao||'—')}</span>`],['Locador',r=>esc(nome('pessoas',r.locador))],['Aluguel',M$('aluguel'),1],['Situação',r=>B(r.status)]]},
+    ['Descrição',r=>`<span class="meta clamp">${esc(r.descricao||'—')}</span>`],['Locador',r=>esc(nome('pessoas',r.locador))],['Aluguel',M$('aluguel'),1],['Situação',r=>B(r.status)+(r.cobraTaxa==='Não'?' '+bdg('sem taxa adm.',''):'')]]},
 contratos:{nome:'Contratos',sing:'contrato',novo:'Novo contrato',salvo:'Contrato salvo.',title:r=>'Nº '+(r.numero||'s/n')+' · '+nome('imoveis',r.imovel),
   defaults:()=>({status:'Ativo',prazo:30,diaVenc:10,indice:'IGP-M',periodoReajuste:'12',garantia:'Fiador',finalidade:'residenciais',modelo:'0',inicio:TODAY}),
   sort:(a,b)=>(a.status==='Ativo'?0:1)-(b.status==='Ativo'?0:1)||String(a.numero||'').localeCompare(String(b.numero||'')),
@@ -683,11 +685,11 @@ financeiro:{nome:'Recebimentos',sing:'recebimento',novo:'Novo recebimento',salvo
     if(k==='competencia'&&v.competencia)set('vencimento',vencOf(v.competencia,c?c.diaVenc:10));
     if(k==='status'&&v.status==='Pago'&&!v.dataPagamento)set('dataPagamento',TODAY);
   },
-  calc:v=>{const t=num(v.aluguel)+num(v.condominio)+num(v.iptu)+num(v.outros)-num(v.desconto)+num(v.multa),tx=num(v.aluguel)*num(C.config.taxaAdm)/100;
-    return `<div class="calc"><span>Total a receber</span><span class="num">${fmt(t)}</span></div><div class="meta" style="margin-top:6px">Taxa de administração (${pct(C.config.taxaAdm)} do aluguel): <b class="num">${fmt(tx)}</b> · Repasse ao locador: <b class="num">${fmt(num(v.aluguel)-tx)}</b></div>`},
+  calc:v=>{const ct=get('contratos',v.contrato),tp=taxaPct(ct&&ct.imovel),t=num(v.aluguel)+num(v.condominio)+num(v.iptu)+num(v.outros)-num(v.desconto)+num(v.multa),tx=num(v.aluguel)*tp/100;
+    return `<div class="calc"><span>Total a receber</span><span class="num">${fmt(t)}</span></div><div class="meta" style="margin-top:6px">${tp?`Taxa de administração (${pct(tp)} do aluguel)`:'Sem taxa de administração (definido no cadastro do imóvel)'}: <b class="num">${fmt(tx)}</b> · Repasse ao locador: <b class="num">${fmt(num(v.aluguel)-tx)}</b></div>`},
   beforeSave:o=>{const c=get('contratos',o.contrato);if(c){o.imovel=c.imovel;o.inquilino=c.inquilino;o.locador=c.locador}
     o.total=Math.round((num(o.aluguel)+num(o.condominio)+num(o.iptu)+num(o.outros)-num(o.desconto)+num(o.multa))*100)/100;
-    o.taxaAdm=Math.round(num(o.aluguel)*num(C.config.taxaAdm))/100;o.repasse=Math.round((num(o.aluguel)-o.taxaAdm)*100)/100;
+    o.taxaAdm=Math.round(num(o.aluguel)*taxaPct(o.imovel))/100;o.repasse=Math.round((num(o.aluguel)-o.taxaAdm)*100)/100;
     if(o.status==='Pago'&&!o.dataPagamento)o.dataPagamento=TODAY;return o},
   filt:r=>compOk(r.competencia)&&(!C.finIm||r.imovel===C.finIm),
   cols:[['Competência',r=>`<b>${fm(r.competencia)}</b>`],['Imóvel',r=>`<b>${esc(nome('imoveis',r.imovel))}</b><div class="meta">${esc(nome('pessoas',r.inquilino))}</div>`],
