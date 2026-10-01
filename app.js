@@ -468,6 +468,8 @@ const dataExtenso=s=>{const [y,m,d]=s.split('-').map(Number);return d+' de '+MES
 const blob=id=>window.MIDIA?window.MIDIA.src(id):'';
 
 const COLS=['precad','pessoas','imoveis','contratos','vistorias','financeiro','despesas','manutencao','estoque'];
+const chkRec=r=>`<label class="meta" style="display:inline-flex;align-items:center;gap:4px;margin-right:6px;cursor:pointer;white-space:nowrap" title="Marcar se este aluguel está pago"><input type="checkbox" data-pgchk="${esc(r.id)}" ${r.status==='Pago'?'checked':''} aria-label="Aluguel pago" style="width:18px;height:18px;cursor:pointer"> Pago</label>`;
+const chkDesp=r=>r._src==='manutencao'?'':`<label class="meta" style="display:inline-flex;align-items:center;gap:4px;margin-right:6px;cursor:pointer;white-space:nowrap" title="Marcar se esta despesa está paga"><input type="checkbox" data-dpchk="${esc(r._id||r.id)}${r._k?'|'+esc(r._k):''}" ${r.status==='Pago'?'checked':''} aria-label="Despesa paga" style="width:18px;height:18px;cursor:pointer"> Paga</label>`;
 const taxaPct=imId=>{const i=imId&&C.data.imoveis[imId];return i&&i.cobraTaxa==='Não'?0:num(C.config.taxaAdm)};
 const DEF_CFG={empresa:'',taxaAdm:10,multa:2,jurosMes:1,igpm:4,ipca:4,inpc:4,alertaDias:30,modelo:''};
 const C={data:Object.fromEntries(COLS.map(c=>[c,{}])),config:{...DEF_CFG},mod:'painel',q:'',finMes:'',fMes:'',fAno:'',finIm:'',finTab:'receb',finAno:CUR.slice(0,4),finSel:'',db:null,assets:null,downloads:null,ready:false};
@@ -695,7 +697,7 @@ financeiro:{nome:'Recebimentos',sing:'recebimento',novo:'Novo recebimento',salvo
   cols:[['Competência',r=>`<b>${fm(r.competencia)}</b>`],['Imóvel',r=>`<b>${esc(nome('imoveis',r.imovel))}</b><div class="meta">${esc(nome('pessoas',r.inquilino))}</div>`],
     ['Vencimento',r=>fd(r.vencimento)],['Total',M$('total'),1],['Repasse',M$('repasse'),1],
     ['Situação',r=>{const s=finStatus(r);return B(s)+(s==='Atrasado'?` <span class="meta">${-days(r.vencimento)} d</span>`:s==='Pago'?` <span class="meta">${fd(r.dataPagamento)}</span>`:'')}]],
-  acts:r=>`<label class="meta" style="display:inline-flex;align-items:center;gap:4px;margin-right:6px;cursor:pointer;white-space:nowrap" title="Marcar se este aluguel está pago"><input type="checkbox" data-pgchk="${esc(r.id)}" ${r.status==='Pago'?'checked':''} aria-label="Aluguel pago" style="width:18px;height:18px;cursor:pointer"> Pago</label>`+(r.status!=='Pago'?`<button class="icon-btn" data-pagar="${esc(r.id)}" title="Registrar recebimento" aria-label="Registrar recebimento">${ICON.cash}</button>`:''),
+  acts:r=>chkRec(r)+(r.status!=='Pago'?`<button class="icon-btn" data-pagar="${esc(r.id)}" title="Registrar recebimento" aria-label="Registrar recebimento">${ICON.cash}</button>`:''),
   tools:()=>filtros()+`<button class="btn" data-gerar>Gerar aluguéis do mês</button>`,
   foot:list=>{const t=sum(list,'total'),pg=sum(list.filter(r=>r.status==='Pago'),'total'),at=sum(list.filter(r=>finStatus(r)==='Atrasado'),'total');
     return `Total <b class="num">${fmt(t)}</b> · recebido <b class="num pos">${fmt(pg)}</b> · a receber <b class="num">${fmt(t-pg-at)}</b> · em atraso <b class="num neg">${fmt(at)}</b> · taxa de administração <b class="num">${fmt(sum(list,'taxaAdm'))}</b>`}},
@@ -723,7 +725,7 @@ despesas:{nome:'Despesas',sing:'despesa',novo:'Nova despesa',salvo:'Despesa salv
   filt:r=>compOk(compOf(r))&&(!C.finIm||r.imovel===C.finIm),
   cols:[['Data',r=>fd(r.data)],['Despesa',r=>`<b>${esc(r.descricao)}</b><div class="meta">${esc(nome('imoveis',r.imovel))}</div>`],
     ['Categoria',r=>(r._src==='manutencao'?bdg('Manutenção','info'):esc(r.categoria||'—'))+(r._rec?` ${bdg(r._rec,'')}`:'')],['Pago por',r=>esc(r.pagoPor||'—')],['Valor',M$('valor'),1],['Situação',r=>B(r.status)+(r.status!=='Pago'&&r.data&&r.data<TODAY?' '+bdg('vencida','bad'):'')]],
-  acts:r=>r._src==='manutencao'?'':`<label class="meta" style="display:inline-flex;align-items:center;gap:4px;margin-right:6px;cursor:pointer;white-space:nowrap" title="Marcar se esta despesa está paga"><input type="checkbox" data-dpchk="${esc(r._id||r.id)}${r._k?'|'+esc(r._k):''}" ${r.status==='Pago'?'checked':''} aria-label="Despesa paga" style="width:18px;height:18px;cursor:pointer"> Paga</label>`,
+  acts:r=>chkDesp(r),
   tools:()=>filtros(),
   foot:list=>{const d=list.filter(doDono);return `Despesas do proprietário <b class="num neg">${fmt(sum(d,'valor'))}</b> (pagas ${fmt(sum(d.filter(r=>r.status==='Pago'),'valor'))} · a pagar ${fmt(sum(d.filter(r=>r.status!=='Pago'),'valor'))}) · pagas pelo inquilino ${fmt(sum(list.filter(r=>!doDono(r)),'valor'))}. Custos de manutenção entram aqui automaticamente.${C.finMes?'':' Despesas que se repetem aparecem até o mês que vem; filtre por mês para ver as futuras.'}`}},
 manutencao:{nome:'Manutenção',sing:'chamado',novo:'Abrir chamado',salvo:'Chamado salvo.',title:r=>r.descricao||'Chamado',
@@ -1434,10 +1436,13 @@ function renderPorImovel(bar){
     const lines=ms.map(m=>{const f=fin.filter(x=>x.competencia===m),d=dsp.filter(x=>compOf(x)===m&&doDono(x));const rec=sum(f.filter(x=>x.status==='Pago'),'total'),ab=sum(f.filter(x=>x.status!=='Pago'),'total'),dd=sum(d,'valor');
       return `<tr><td>${fm(m)}</td><td class="r num pos">${fmt(rec)}</td><td class="r num ${f.some(x=>finStatus(x)==='Atrasado')?'neg':''}">${fmt(ab)}</td><td class="r num neg">${fmt(dd)}</td><td class="r num ${rec-dd>=0?'pos':'neg'}">${fmt(rec-dd)}</td></tr>`}).join('');
     const dl=dsp.filter(x=>compOf(x).startsWith(Y)).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    const fl=fin.filter(x=>(x.competencia||'').startsWith(Y)).sort((a,b)=>(b.competencia||'').localeCompare(a.competencia||''));
     det=`<div class="card" style="margin-top:18px"><div class="card-h"><h2>${thumb(sel.foto)} ${esc(MODS.imoveis.title(sel))} · ${Y}</h2><button class="btn sm" data-finsel="">Fechar</button></div>
     <div class="tbl-wrap"><table class="cmt"><thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">Em aberto</th><th class="r">Despesas</th><th class="r">Resultado</th></tr></thead><tbody>${lines}</tbody></table></div>
     <div class="card-h" style="border-top:1px solid var(--line)"><h2>Despesas lançadas em ${Y}</h2><button class="btn sm" data-new="despesas" data-im="${esc(sel.id)}">${ICON.plus} Nova despesa</button></div>
-    ${dl.length?`<ul class="plist">${dl.map(x=>`<li><div><b>${esc(x.descricao)}</b><div class="meta">${fd(x.data)} · ${esc(x.categoria)} · pago por ${esc(x.pagoPor)}</div></div><span class="num ${doDono(x)?'neg':''}">${fmt(x.valor)}</span></li>`).join('')}</ul>`:'<div class="empty">Nenhuma despesa neste ano.</div>'}</div>`}
+    ${dl.length?`<ul class="plist">${dl.map(x=>`<li><div><b>${esc(x.descricao)}</b><div class="meta">${fd(x.data)} · ${esc(x.categoria)} · pago por ${esc(x.pagoPor)} · ${B(x.status)}</div></div><span style="display:inline-flex;align-items:center;gap:10px">${chkDesp(x)}<span class="num ${doDono(x)?'neg':''}">${fmt(x.valor)}</span></span></li>`).join('')}</ul>`:'<div class="empty">Nenhuma despesa neste ano.</div>'}
+    <div class="card-h" style="border-top:1px solid var(--line)"><h2>Aluguéis de ${Y}</h2></div>
+    ${fl.length?`<ul class="plist">${fl.map(x=>`<li><div><b>${fm(x.competencia)}</b><div class="meta">vence ${fd(x.vencimento)} · ${esc(nome('pessoas',x.inquilino))} · ${B(finStatus(x))}${x.status==='Pago'&&x.dataPagamento?' em '+fd(x.dataPagamento):''}</div></div><span style="display:inline-flex;align-items:center;gap:10px">${chkRec(x)}<span class="num">${fmt(x.total)}</span></span></li>`).join('')}</ul>`:'<div class="empty">Nenhum aluguel lançado neste ano. Use “Gerar aluguéis do mês” em Recebimentos.</div>'}</div>`}
   $('#cmMain').innerHTML=`<div class="modh"><div><h1>Financeiro</h1><div class="meta">Resultado de cada imóvel: recebimentos menos despesas do proprietário</div></div>
     <div class="tools"><select id="finAno" class="search" style="width:auto" aria-label="Ano">${[...yrs].sort().map(y=>`<option ${y===Y?'selected':''}>${y}</option>`).join('')}</select></div></div>${bar}
   <div class="summary" style="margin-bottom:18px"><div><span class="lbl">Recebido em ${Y}</span><span class="val num pos">${fmt(T('rec'))}</span><span class="sub">Taxa de adm. ${fmt(T('tx'))}</span></div>
