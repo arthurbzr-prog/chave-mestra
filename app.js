@@ -663,15 +663,15 @@ vistorias:{nome:'Vistorias',sing:'vistoria',novo:'Nova vistoria',salvo:'Vistoria
     {k:'midia',l:'Fotos e vídeos da vistoria',t:'media',full:1},
     {t:'sec',l:'Assinatura do locador'},{k:'assLocador',l:'Assinada pelo locador',t:'sel',opt:OPT.simnao},{k:'assLocadorNome',l:'Nome do locador (quem assinou)',t:'text'},
     {k:'assLocadorFoto',l:'Foto do locador ou da assinatura',t:'photo',full:1},
-    {t:'sec',l:'Assinatura do inquilino'},{k:'assInquilino',l:'Assinada pelo inquilino',t:'sel',opt:OPT.simnao},{k:'assInquilinoNome',l:'Nome do inquilino (quem assinou)',t:'text'},
-    {k:'assInquilinoFoto',l:'Foto do inquilino ou da assinatura',t:'photo',full:1}],
+    {t:'sec',l:'Assinatura do locatário'},{k:'assInquilino',l:'Assinada pelo locatário',t:'sel',opt:OPT.simnao},{k:'assInquilinoNome',l:'Nome do locatário (quem assinou)',t:'text'},
+    {k:'assInquilinoFoto',l:'Foto do locatário ou da assinatura',t:'photo',full:1}],
   prep:v=>{if(v.tipo==='Entrada')v.tipo='Entrega das chaves';if(v.tipo==='Saída')v.tipo='Recebimento das chaves';return v},
   onChange:(k,v,set)=>{if(k==='contrato'){const c=get('contratos',v.contrato);if(c){if(c.imovel)set('imovel',c.imovel);if(!v.assLocadorNome&&c.locador)set('assLocadorNome',nome('pessoas',c.locador));if(!v.assInquilinoNome&&c.inquilino)set('assInquilinoNome',nome('pessoas',c.inquilino))}}
     if(k==='imovel'&&!v.assLocadorNome){const i=get('imoveis',v.imovel);if(i&&i.locador)set('assLocadorNome',nome('pessoas',i.locador))}},
   calc:v=>imovelCard(get('imoveis',v.imovel),'Imóvel vistoriado'),
   cols:[['Data',r=>fd(r.data)],['Imóvel',r=>`<b>${esc(nome('imoveis',r.imovel))}</b><div class="meta">${esc(endereco(get('imoveis',r.imovel)))}</div>`],['Tipo',r=>B(MODS.vistorias.prep({...r}).tipo)],['Estado',r=>B(r.estado)],
     ['Arquivos',r=>{const m=Array.isArray(r.midia)?r.midia:[];return m.length?`<button class="btn sm" data-gal="${esc(r.id)}">${ICON.cam} ${m.length} ${m.length===1?'arquivo':'arquivos'}</button>`:'<span class="meta">—</span>'}],
-    ['Assinaturas',r=>`${r.assLocador==='Sim'?bdg('Locador','ok'):bdg('Locador pendente','')} ${r.assInquilino==='Sim'?bdg('Inquilino','ok'):bdg('Inquilino pendente','')}${r.assLocadorNome||r.assInquilinoNome?`<div class="meta">${esc([r.assLocadorNome,r.assInquilinoNome].filter(Boolean).join(' · '))}</div>`:''}`]],
+    ['Assinaturas',r=>`${r.assLocador==='Sim'?bdg('Locador','ok'):bdg('Locador pendente','')} ${r.assInquilino==='Sim'?bdg('Locatário','ok'):bdg('Locatário pendente','')}${r.assLocadorNome||r.assInquilinoNome?`<div class="meta">${esc([r.assLocadorNome,r.assInquilinoNome].filter(Boolean).join(' · '))}</div>`:''}`]],
   acts:r=>`<button class="icon-btn" data-printv="${esc(r.id)}" title="Imprimir vistoria com fotos" aria-label="Imprimir vistoria">${ICON.print}</button>`},
 financeiro:{nome:'Recebimentos',sing:'recebimento',novo:'Novo recebimento',salvo:'Recebimento salvo.',title:r=>fm(r.competencia)+' · '+nome('pessoas',r.inquilino),
   defaults:()=>({competencia:C.finMes||CUR,status:'Pendente'}),
@@ -1237,7 +1237,7 @@ table{border-collapse:collapse;width:100%}th,td{text-align:left;vertical-align:t
 <h2>Itens vistoriados e observações</h2><div class="itens">${e(v.itens||'Sem observações.')}</div>
 <h2>Fotos (${fotos.length})${nVid?` · ${nVid} vídeo(s) disponível(is) no aplicativo`:''}</h2>${fotos.length?`<div class="fotos">${fs.map((s,i)=>`<div class="foto">${s?`<img src="${s}" alt="">`:'<div style="height:230px;display:grid;place-items:center;background:#f3f3f3">Foto indisponível</div>'}<div>Foto ${i+1}${fotos[i].nome?' · '+e(fotos[i].nome):''}</div></div>`).join('')}</div>`:'<p>Nenhuma foto anexada.</p>'}
 <h2>Assinaturas</h2><p style="font-size:10pt">As partes declaram estar de acordo com as condições do imóvel descritas neste laudo.</p>
-<div class="asss-wrap">${assin('Locador',loc,v.assLocador,fLoc)}${assin('Inquilino',inq,v.assInquilino,fInq)}</div>
+<div class="asss-wrap">${assin('Locador',loc,v.assLocador,fLoc)}${assin('Locatário',inq,v.assInquilino,fInq)}</div>
 <div class="rod">Documento gerado pelo Chave Mestra em ${fd(TODAY)}</div>
 <script>window.addEventListener('load',()=>setTimeout(()=>print(),400))<\/script></body></html>`;
   const nomeArq=('Vistoria '+(v.tipo||'')+' - '+(MODS.imoveis.title(im)||'imovel')+' - '+fd(v.data).replace(/\//g,'-')).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[\\/:*?"<>|]/g,'-');
