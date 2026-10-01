@@ -1568,6 +1568,47 @@ function renderPainel(){
 const CFGF=[{k:'empresa',l:'Nome da administradora',t:'text',full:1},{k:'taxaAdm',l:'Taxa de administração (% do aluguel)',t:'num'},{k:'alertaDias',l:'Avisar reajuste com quantos dias',t:'num'},
   {k:'multa',l:'Multa por atraso (%)',t:'num'},{k:'jurosMes',l:'Juros de mora (% ao mês)',t:'num'},
   {k:'igpm',l:'IGP-M acumulado 12 meses (%)',t:'num'},{k:'ipca',l:'IPCA acumulado 12 meses (%)',t:'num'},{k:'inpc',l:'INPC acumulado 12 meses (%)',t:'num'}];
+/* ---------- apagar todas as informações (Configurações) ---------- */
+const LIMPAR={
+  alugueis:{nome:'Aluguéis',cols:COLS.map(c=>'cm_'+c),desc:'Pessoas, pré-cadastros, imóveis, contratos, vistorias, recebimentos, despesas, manutenção, estoque e as fotos e arquivos anexados. As Configurações (taxa, multa, contratos modelo) continuam.'},
+  caixa:{nome:'Caixa Mensal',cols:['itens','meses','transf'],desc:'Todas as receitas, despesas, transferências e meses arquivados do Caixa Mensal. O saldo inicial volta para zero.'}};
+const vendoOutraConta=()=>!!document.querySelector('[data-a="minha"]');
+const idsDe=nm=>new Promise(res=>{let un=null,ok=false;try{un=C.db.collection(nm).onSnapshot(s=>{if(ok)return;ok=true;res(s.docs.map(d=>d.id));setTimeout(()=>{try{un&&un()}catch(e){}},0)},()=>{if(!ok){ok=true;res([])}})}catch(e){res([])}});
+function limparCard(){
+  return `<div class="card" style="margin-top:18px;border-color:var(--neg,#b42318)" id="cfgLimpar"><div class="card-h"><h2>Apagar informações cadastradas</h2><span class="meta">não dá para desfazer</span></div>
+  <div style="padding:16px;display:grid;gap:12px">
+  <div class="meta">Apaga tudo o que foi cadastrado. Cada parte é apagada separadamente: escolha Aluguéis ou Caixa Mensal. O site pede duas confirmações e a senha da sua conta (a mesma do login). <b>Antes, baixe as planilhas em “Planilhas” se quiser guardar uma cópia.</b></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn danger" data-limpar="alugueis">Apagar dados de Aluguéis</button><button class="btn danger" data-limpar="caixa">Apagar dados do Caixa Mensal</button></div></div></div>`}
+function pedirSenha(nomeParte){return new Promise(res=>{let done=false;const fim=v=>{if(!done){done=true;res(v)}};
+  const temFb=!!(window.firebase&&firebase.auth&&firebase.auth().currentUser);
+  modal(`<h3>Confirmar com a senha</h3><p>${temFb?'Digite a senha da sua conta (a mesma que você usa para entrar no site) para apagar os dados de <b>'+esc(nomeParte)+'</b>.':'Digite APAGAR para confirmar que quer apagar os dados de <b>'+esc(nomeParte)+'</b>.'}</p>
+    <form id="lpF" novalidate><div class="field"><label for="lpS">${temFb?'Senha':'Confirmação'}</label><input id="lpS" type="${temFb?'password':'text'}" autocomplete="${temFb?'current-password':'off'}" required></div><p class="meta" id="lpE" style="color:var(--neg,#b42318);min-height:1.2em"></p>
+    <div class="sheet-f"><button class="btn" type="button" data-x>Cancelar</button><button class="btn danger" type="submit">Apagar definitivamente</button></div></form>`,(el,close)=>{
+    el.querySelector('[data-x]').onclick=()=>{close();fim(false)};
+    const obs=new MutationObserver(()=>{if(!document.body.contains(el)){obs.disconnect();fim(false)}});obs.observe(document.body,{childList:true,subtree:true});
+    el.querySelector('#lpF').onsubmit=async e=>{e.preventDefault();const v=el.querySelector('#lpS').value,er=el.querySelector('#lpE'),bt=el.querySelector('[type=submit]');
+      if(!v){er.textContent='Digite '+(temFb?'a senha.':'APAGAR.');return}
+      if(!temFb){if(v.trim().toUpperCase()!=='APAGAR'){er.textContent='Digite exatamente APAGAR.';return}obs.disconnect();close();fim(true);return}
+      bt.disabled=true;er.textContent='Conferindo a senha…';
+      try{const u=firebase.auth().currentUser;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,v));obs.disconnect();close();fim(true)}
+      catch(x){bt.disabled=false;const c=x&&x.code||'';er.textContent=/wrong-password|invalid-credential|invalid-login/.test(c)?'Senha incorreta.':/too-many/.test(c)?'Muitas tentativas. Espere alguns minutos e tente de novo.':'Não foi possível conferir a senha ('+c+').'}}})})}
+async function limparTudo(qual){
+  const L=LIMPAR[qual];if(!L)return;
+  if(vendoOutraConta()){toast('Você está vendo a conta de outra pessoa. Volte para a sua conta para apagar dados.');return}
+  if(!C.db){toast('Apagar tudo só funciona no site com login.');return}
+  const ok1=await choose('Deletar todas as informações de '+L.nome+'?',L.desc,[{label:'Sim, quero deletar as informações de '+L.nome,value:1,danger:true}]);if(!ok1)return;
+  const ok2=await choose('Tem certeza? Isso não pode ser desfeito.','Os dados de '+L.nome+' serão apagados de todos os aparelhos.'+(qual==='alugueis'?' O Caixa Mensal não é afetado.':' Os Aluguéis não são afetados.'),[{label:'Confirmar: apagar '+L.nome,value:1,danger:true}]);if(!ok2)return;
+  if(!await pedirSenha(L.nome))return;
+  toast('Apagando dados de '+L.nome+'… não feche a página.');
+  let n=0,falhas=0;
+  for(const col of L.cols){const ids=await idsDe(col);for(const id of ids){try{await C.db.doc(col+'/'+id).delete();n++}catch(e){falhas++}}}
+  if(qual==='caixa'){try{await C.db.doc('config/geral').set({saldoInicial:0,mesInicial:null,exemplo:false})}catch(e){falhas++}}
+  if(qual==='alugueis'){COLS.forEach(c=>C.data[c]={});
+    try{if(window.firebase&&firebase.firestore&&firebase.auth().currentUser){const base=firebase.firestore().collection('contas').doc(firebase.auth().currentUser.uid);const ms=await base.collection('midia').get();
+      for(const d of ms.docs){try{const ps=await d.ref.collection('partes').get();for(const p of ps.docs)await p.ref.delete();await d.ref.delete();n++}catch(e){falhas++}}}}catch(e){falhas++}
+    render()}
+  toast(falhas?`Apagados ${n} registro(s) de ${L.nome}. ${falhas} não puderam ser apagados; tente de novo.`:`Pronto: os dados de ${L.nome} foram apagados (${n} registro(s)).`);
+}
 function renderConfig(){
   C.mDraft=C.mDraft||{};const mt=C.mTab||0;const md=i=>C.mDraft[i]||mdl(i);
   $('#cmMain').innerHTML=`<div class="modh"><div><h1>Configurações</h1><div class="meta">Parâmetros usados nos cálculos e no contrato</div></div></div>
@@ -1588,7 +1629,8 @@ function renderConfig(){
   <textarea id="mdTxt" class="mdtxt" aria-label="Texto do modelo ${mt+1}">${esc(md(mt).texto)}</textarea>
   <details><summary class="meta" style="cursor:pointer">Campos disponíveis</summary><div class="chips">${CAMPOS.map(([k,l])=>`<button type="button" class="chip" data-ins="{{${k}}}" title="Inserir no texto">{{${esc(k)}}} <span>${esc(l)}</span></button>`).join('')}</div></details>
   <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px"><button class="btn" id="mdReset">Restaurar texto padrão deste modelo</button><span style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn" id="mdPrev">${ICON.print} Pré-visualizar impressão (PDF)</button><button class="btn primary" id="mdSave">Salvar modelo ${mt+1}</button></span></div>
-  <div class="meta">Os modelos padrão (residencial, comercial e temporada) são bases gerais conforme a Lei do Inquilinato. Vale revisar com um advogado antes de usar.</div></div></div>`;
+  <div class="meta">Os modelos padrão (residencial, comercial e temporada) são bases gerais conforme a Lei do Inquilinato. Vale revisar com um advogado antes de usar.</div></div></div>${limparCard()}`;
+  $('#cmMain').querySelectorAll('[data-limpar]').forEach(b=>b.onclick=()=>limparTudo(b.dataset.limpar));
   $('#cfgf').addEventListener('submit',async e=>{e.preventDefault();const o=readFields($('#cfgf'),CFGF,'cfg-');const err=checkFields(o,CFGF);if(err){$('#cfgerr').textContent=err;return}await put('config','geral',{...C.config,...o});toast('Configurações salvas.')});
   const pnSet=ids=>$('#cmMain').querySelectorAll('[data-pn]').forEach(b=>b.checked=ids.includes(b.dataset.pn));
   $('#pnAll').onclick=()=>pnSet(WIDGETS.map(w=>w.id));$('#pnDef').onclick=()=>pnSet(W_DEF);
