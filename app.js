@@ -469,7 +469,7 @@ const blob=id=>window.MIDIA?window.MIDIA.src(id):'';
 
 const COLS=['precad','pessoas','imoveis','contratos','vistorias','financeiro','despesas','manutencao','estoque'];
 const DEF_CFG={empresa:'',taxaAdm:10,multa:2,jurosMes:1,igpm:4,ipca:4,inpc:4,alertaDias:30,modelo:''};
-const C={data:Object.fromEntries(COLS.map(c=>[c,{}])),config:{...DEF_CFG},mod:'painel',q:'',finMes:'',finIm:'',finTab:'receb',finAno:CUR.slice(0,4),finSel:'',db:null,assets:null,downloads:null,ready:false};
+const C={data:Object.fromEntries(COLS.map(c=>[c,{}])),config:{...DEF_CFG},mod:'painel',q:'',finMes:'',fMes:'',fAno:'',finIm:'',finTab:'receb',finAno:CUR.slice(0,4),finSel:'',db:null,assets:null,downloads:null,ready:false};
 const LSK='chave-mestra-v1';
 try{const m=localStorage.getItem(LSK+'-mod');if(m)C.mod=m;const f=localStorage.getItem(LSK+'-fin');if(f)C.finTab=f}catch(e){}
 
@@ -689,11 +689,11 @@ financeiro:{nome:'Recebimentos',sing:'recebimento',novo:'Novo recebimento',salvo
     o.total=Math.round((num(o.aluguel)+num(o.condominio)+num(o.iptu)+num(o.outros)-num(o.desconto)+num(o.multa))*100)/100;
     o.taxaAdm=Math.round(num(o.aluguel)*num(C.config.taxaAdm))/100;o.repasse=Math.round((num(o.aluguel)-o.taxaAdm)*100)/100;
     if(o.status==='Pago'&&!o.dataPagamento)o.dataPagamento=TODAY;return o},
-  filt:r=>(!C.finMes||r.competencia===C.finMes)&&(!C.finIm||r.imovel===C.finIm),
+  filt:r=>compOk(r.competencia)&&(!C.finIm||r.imovel===C.finIm),
   cols:[['Competência',r=>`<b>${fm(r.competencia)}</b>`],['Imóvel',r=>`<b>${esc(nome('imoveis',r.imovel))}</b><div class="meta">${esc(nome('pessoas',r.inquilino))}</div>`],
     ['Vencimento',r=>fd(r.vencimento)],['Total',M$('total'),1],['Repasse',M$('repasse'),1],
     ['Situação',r=>{const s=finStatus(r);return B(s)+(s==='Atrasado'?` <span class="meta">${-days(r.vencimento)} d</span>`:s==='Pago'?` <span class="meta">${fd(r.dataPagamento)}</span>`:'')}]],
-  acts:r=>r.status!=='Pago'?`<button class="icon-btn" data-pagar="${esc(r.id)}" title="Registrar recebimento" aria-label="Registrar recebimento">${ICON.cash}</button>`:'',
+  acts:r=>`<label class="meta" style="display:inline-flex;align-items:center;gap:4px;margin-right:6px;cursor:pointer;white-space:nowrap" title="Marcar se este aluguel está pago"><input type="checkbox" data-pgchk="${esc(r.id)}" ${r.status==='Pago'?'checked':''} aria-label="Aluguel pago" style="width:18px;height:18px;cursor:pointer"> Pago</label>`+(r.status!=='Pago'?`<button class="icon-btn" data-pagar="${esc(r.id)}" title="Registrar recebimento" aria-label="Registrar recebimento">${ICON.cash}</button>`:''),
   tools:()=>filtros()+`<button class="btn" data-gerar>Gerar aluguéis do mês</button>`,
   foot:list=>{const t=sum(list,'total'),pg=sum(list.filter(r=>r.status==='Pago'),'total'),at=sum(list.filter(r=>finStatus(r)==='Atrasado'),'total');
     return `Total <b class="num">${fmt(t)}</b> · recebido <b class="num pos">${fmt(pg)}</b> · a receber <b class="num">${fmt(t-pg-at)}</b> · em atraso <b class="num neg">${fmt(at)}</b> · taxa de administração <b class="num">${fmt(sum(list,'taxaAdm'))}</b>`}},
@@ -716,9 +716,9 @@ despesas:{nome:'Despesas',sing:'despesa',novo:'Nova despesa',salvo:'Despesa salv
     return `<div class="calc"><span>${v.rec==='parcelada'?(n?`${n} parcelas de ${fmt(val)}`:'Informe o nº de parcelas'):v.rec==='mensal'?'Todo mês':'A cada '+(v.intervalo||'?')+' meses'}</span><span class="num">${v.rec==='parcelada'&&n?'total '+fmt(val*n):fmt(val)+' por vez'}</span></div><div class="meta" style="margin-top:6px">Aparece no Financeiro e na previsão em cada mês em que vence. Alterar aqui muda todos os meses dessa despesa.</div>`},
   beforeSave:o=>{if(o.rec==='unica'){delete o.parcelas;delete o.intervalo;delete o.fim}else{if(o.status==='Pago'&&o.data)o.pagos={...(o.pagos||{}),[o.data.slice(0,7)]:true};delete o.status;if(o.rec!=='parcelada')delete o.parcelas;if(o.rec!=='recorrente')delete o.intervalo;if(o.rec==='parcelada')delete o.fim}
     if(o.rec==='parcelada')o.parcelas=Math.max(2,Math.round(num(o.parcelas)||2));return o},
-  rowsFn:()=>despRows().filter(r=>C.finMes||!r._k||r._k<=addComp(CUR,1)),
+  rowsFn:()=>despRows().filter(r=>C.fMes||C.fAno||!r._k||r._k<=addComp(CUR,1)),
   extra:()=>rows('manutencao').filter(m=>num(m.custo)>0).map(m=>({id:'mn-'+m.id,_src:'manutencao',_id:m.id,imovel:m.imovel,descricao:m.descricao,categoria:'Manutenção',data:m.conclusao||m.abertura,valor:num(m.custo),pagoPor:m.pagoPor||'Locador',status:m.status==='Concluído'?'Pago':'A pagar'})),
-  filt:r=>(!C.finMes||compOf(r)===C.finMes)&&(!C.finIm||r.imovel===C.finIm),
+  filt:r=>compOk(compOf(r))&&(!C.finIm||r.imovel===C.finIm),
   cols:[['Data',r=>fd(r.data)],['Despesa',r=>`<b>${esc(r.descricao)}</b><div class="meta">${esc(nome('imoveis',r.imovel))}</div>`],
     ['Categoria',r=>(r._src==='manutencao'?bdg('Manutenção','info'):esc(r.categoria||'—'))+(r._rec?` ${bdg(r._rec,'')}`:'')],['Pago por',r=>esc(r.pagoPor||'—')],['Valor',M$('valor'),1],['Situação',r=>B(r.status)+(r.status!=='Pago'&&r.data&&r.data<TODAY?' '+bdg('vencida','bad'):'')]],
   acts:r=>r._k?`<button class="icon-btn" data-dpago="${esc(r._id)}|${esc(r._k)}" title="${r.status==='Pago'?'Marcar como a pagar':'Marcar como paga'}" aria-label="Marcar como paga">${ICON.check}</button>`:'',
@@ -755,9 +755,19 @@ MODS.precad={...MODS.pessoas,nome:'Pré-cadastros',sing:'pré-cadastro',novo:'No
   fields:MODS.pessoas.fields.map(f=>f.k==='tipo'?{...f,l:'Classificação (quando for para Pessoas)'}:f),
   defaults:()=>({tipo:'Inquilino',recebidoEm:TODAY}),afterSave:async()=>{C.npResp=''}};
 const NAV=[['painel','Painel'],['novapessoa','Nova pessoa (WhatsApp)'],['pessoas'],['imoveis'],['contratos'],['vistorias'],['financeiro','Financeiro'],['manutencao'],['estoque'],['relatorios','Planilhas'],['config','Configurações']];
+const compOk=k=>(!C.fAno||String(k||'').slice(0,4)===C.fAno)&&(!C.fMes||String(k||'').slice(5,7)===C.fMes);
+const finFiltOn=()=>!!(C.fMes||C.fAno||C.finIm);
+const finFiltLbl=()=>{const M=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];return C.fMes&&C.fAno?fm(C.fAno+'-'+C.fMes):C.fMes?M[+C.fMes-1]+' (todos os anos)':C.fAno?'Ano '+C.fAno:'todos os meses'};
+async function togglePago(id,on,el){const raw={...C.data.financeiro[id]};if(!C.data.financeiro[id])return;
+  if(on){const late=-(days(raw.vencimento)||0);if(late>0){el.checked=false;await pagar(id);return}
+    raw.status='Pago';raw.dataPagamento=raw.dataPagamento||TODAY;await put('financeiro',id,MODS.financeiro.beforeSave(raw));toast('Aluguel marcado como pago.')}
+  else{const ok=await choose('Desmarcar o pagamento?',fm(raw.competencia)+' · '+nome('pessoas',raw.inquilino)+' · '+nome('imoveis',raw.imovel),[{label:'Desmarcar',value:1,danger:true}]);if(!ok){el.checked=true;return}
+    raw.status='Pendente';raw.dataPagamento='';await put('financeiro',id,MODS.financeiro.beforeSave(raw));toast('Pagamento desmarcado.')}}
 function filtros(){
   const ims=rows('imoveis').sort(MODS.imoveis.sort);
-  return `<input type="month" id="finMes" class="search" style="width:auto" value="${esc(C.finMes)}" aria-label="Filtrar por mês" title="Filtrar por mês">
+  const anos=new Set([CUR.slice(0,4),String(+CUR.slice(0,4)+1)]);rows('financeiro').forEach(f=>f.competencia&&anos.add(f.competencia.slice(0,4)));despRows().forEach(d=>{const k=compOf(d);if(k)anos.add(k.slice(0,4))});
+  return `<select id="finFMes" class="search" style="width:auto" aria-label="Filtrar por mês" title="Filtrar por mês"><option value="">Todos os meses</option>${[['01','Janeiro'],['02','Fevereiro'],['03','Março'],['04','Abril'],['05','Maio'],['06','Junho'],['07','Julho'],['08','Agosto'],['09','Setembro'],['10','Outubro'],['11','Novembro'],['12','Dezembro']].map(([v,l])=>`<option value="${v}" ${C.fMes===v?'selected':''}>${l}</option>`).join('')}</select>
+  <select id="finFAno" class="search" style="width:auto" aria-label="Filtrar por ano" title="Filtrar por ano"><option value="">Todos os anos</option>${[...anos].sort().map(y=>`<option ${C.fAno===y?'selected':''}>${y}</option>`).join('')}</select>
   <select id="finIm" class="search" style="width:auto;max-width:220px" aria-label="Filtrar por imóvel"><option value="">Todos os imóveis</option>${ims.map(i=>`<option value="${esc(i.id)}" ${C.finIm===i.id?'selected':''}>${esc(MODS.imoveis.title(i))}</option>`).join('')}</select>`;
 }
 
@@ -1393,12 +1403,12 @@ function renderList(c,pre){
   let cells=list.map(r=>({r,h:M.cols.map(col=>col[1](r))}));
   if(q)cells=cells.filter(x=>x.h.join(' ').replace(/<[^>]+>/g,' ').toLowerCase().includes(q));
   const foot=M.foot&&list.length?`<div class="note">${M.foot(list)}</div>`:'';
-  $('#cmMain').innerHTML=`<div class="modh"><div><h1>${esc(pre?'Financeiro':M.nome)}</h1><div class="meta">${list.length} ${list.length===1?'registro':'registros'}${M.filt&&(C.finMes||C.finIm)?' no filtro':''}</div></div>
+  $('#cmMain').innerHTML=`<div class="modh"><div><h1>${esc(pre?'Financeiro':M.nome)}</h1><div class="meta">${list.length} ${list.length===1?'registro':'registros'}${M.filt&&finFiltOn()?' no filtro':''}</div></div>
     <div class="tools">${M.tools?M.tools():''}<button class="btn" data-xlista="${c}" title="Baixar esta lista em Excel">${ICON.doc} Planilha</button><input class="search" id="cmq" type="search" placeholder="Buscar…" aria-label="Buscar" value="${esc(C.q)}"><button class="btn primary" data-new="${c}">${ICON.plus} ${esc(M.novo)}</button></div></div>
   ${pre||''}
   <div class="card">${cells.length?`<div class="tbl-wrap"><table class="cmt"><thead><tr>${M.cols.map(col=>`<th class="${col[2]?'r':''}">${esc(col[0])}</th>`).join('')}<th class="r"><span class="sr">Ações</span></th></tr></thead><tbody>
     ${cells.map(x=>`<tr>${x.h.map((h,i)=>`<td class="${M.cols[i][2]?'r':''}">${h}</td>`).join('')}<td class="act">${M.acts&&(!x.r._src||c==='despesas')?M.acts(x.r):''}<button class="icon-btn" data-col="${x.r._src||c}" data-edit="${esc(x.r._id||x.r.id)}" title="${x.r._src?'Abrir chamado de manutenção':'Editar'}" aria-label="Editar">${ICON.edit}</button></td></tr>`).join('')}
-  </tbody></table></div>`:`<div class="empty">${q?'Nada encontrado para “'+esc(C.q)+'”.':'Nenhum registro'+(M.filt&&(C.finMes||C.finIm)?' neste filtro':'')+'. Use “'+esc(M.novo)+'” para começar.'}</div>`}${foot}</div>`;
+  </tbody></table></div>`:`<div class="empty">${q?'Nada encontrado para “'+esc(C.q)+'”.':'Nenhum registro'+(M.filt&&finFiltOn()?' neste filtro':'')+'. Use “'+esc(M.novo)+'” para começar.'}</div>`}${foot}</div>`;
 }
 const FTABS=[['receb','Recebimentos'],['desp','Despesas'],['imovel','Por imóvel'],['prev','Previsão']];
 function renderFin(){
@@ -1640,7 +1650,7 @@ $('#app-cm').addEventListener('input',e=>{if(e.target.id==='npTel'){C.npTel=e.ta
   if(e.target.id==='npMsg'){const tel=(C.npTel||'').replace(/\D/g,''),a=$('#npWa');if(a)a.href='https://wa.me/'+(tel?(tel.length<=11?'55'+tel:tel):'')+'?text='+encodeURIComponent(e.target.value);return}
   if(e.target.id==='npResp'){C.npResp=e.target.value;return}
   if(e.target.id==='cmq'){C.q=e.target.value;const pos=e.target.selectionStart;render();const s=$('#cmq');if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(x){}}}});
-$('#app-cm').addEventListener('change',e=>{const id=e.target.id;if(id==='finMes'){C.finMes=e.target.value;render()}else if(id==='finIm'){C.finIm=e.target.value;render()}else if(id==='finAno'){C.finAno=e.target.value;render()}else if(e.target.dataset&&e.target.dataset.pcdest){const pid=e.target.dataset.pcdest,raw=C.data.precad[pid];if(raw)put('precad',pid,{...raw,destino:e.target.value})}else if(e.target.dataset&&e.target.dataset.pctipo){const pid=e.target.dataset.pctipo,raw=C.data.precad[pid];if(raw)put('precad',pid,{...raw,tipo:e.target.value})}else if(id==='npIm'){C.npIm=e.target.value;render()}else if(id==='npTipo'){C.npTipo=e.target.value}else if(id==='mnCat'){C.mnCat=e.target.value;render()}else if(id==='mnSt'){C.mnSt=e.target.value;render()}});
+$('#app-cm').addEventListener('change',e=>{const id=e.target.id;if(id==='finFMes'||id==='finFAno'){if(id==='finFMes')C.fMes=e.target.value;else C.fAno=e.target.value;C.finMes=C.fMes&&C.fAno?C.fAno+'-'+C.fMes:'';render()}else if(e.target.dataset&&e.target.dataset.pgchk){togglePago(e.target.dataset.pgchk,e.target.checked,e.target)}else if(id==='finMes'){C.finMes=e.target.value;render()}else if(id==='finIm'){C.finIm=e.target.value;render()}else if(id==='finAno'){C.finAno=e.target.value;render()}else if(e.target.dataset&&e.target.dataset.pcdest){const pid=e.target.dataset.pcdest,raw=C.data.precad[pid];if(raw)put('precad',pid,{...raw,destino:e.target.value})}else if(e.target.dataset&&e.target.dataset.pctipo){const pid=e.target.dataset.pctipo,raw=C.data.precad[pid];if(raw)put('precad',pid,{...raw,tipo:e.target.value})}else if(id==='npIm'){C.npIm=e.target.value;render()}else if(id==='npTipo'){C.npTipo=e.target.value}else if(id==='mnCat'){C.mnCat=e.target.value;render()}else if(id==='mnSt'){C.mnSt=e.target.value;render()}});
 $('#cmClear').onclick=async()=>{
   const ok=await choose('Apagar os cadastros de exemplo?','Os cadastros que você fez não são afetados.',[{label:'Apagar exemplos',value:1,danger:true}]);if(!ok)return;
   for(const c of COLS)for(const r of rows(c))if(r.exemplo)await del(c,r.id);toast('Exemplos apagados.');
@@ -1739,7 +1749,7 @@ const REL={
   async lista(c){const M=MODS[c];const wb=await wbNovo();let list=M.rowsFn?M.rowsFn():rows(c).concat(M.extra?M.extra():[]);if(M.sort)list.sort(M.sort);if(M.filt)list=list.filter(M.filt);
     const txt=h=>{const d=document.createElement('div');d.innerHTML=String(h).replace(/<div/g,' · <div');return d.textContent.replace(/\s+/g,' ').replace(/^ · /,'').trim()};
     const mon=h=>{const t=txt(h).replace(/[^\d,.\-]/g,'').replace(/\./g,'').replace(',','.');const v=parseFloat(t);return isFinite(v)?v:null};
-    xlSheet(wb,M.nome,M.nome,geradoEm()+(c==='financeiro'||c==='despesas'?' · '+(C.finMes?fm(C.finMes):'todos os meses')+(C.finIm?' · '+nome('imoveis',C.finIm):''):''),M.cols.map((col,i)=>({h:col[0],k:'c'+i,t:col[2]?'money':'text',w:col[2]?15:28})),
+    xlSheet(wb,M.nome,M.nome,geradoEm()+(c==='financeiro'||c==='despesas'?' · '+finFiltLbl()+(C.finIm?' · '+nome('imoveis',C.finIm):''):''),M.cols.map((col,i)=>({h:col[0],k:'c'+i,t:col[2]?'money':'text',w:col[2]?15:28})),
       list.map(r=>{const o={};M.cols.forEach((col,i)=>{o['c'+i]=col[2]?mon(col[1](r)):txt(col[1](r))});return o}));
     await xlSave(wb,M.nome+' - '+fd(TODAY).replace(/\//g,'-'));
   },
